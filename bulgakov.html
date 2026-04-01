@@ -2,32 +2,43 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Булгаков - Киев 1918</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Булгаков - Белая гвардия</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        body {
-            background: linear-gradient(135deg, #2c2c3a 0%, #1a1a2a 100%);
-        }
+        body { background: linear-gradient(135deg, #2c2c3a 0%, #1a1a2a 100%); }
     </style>
 </head>
 <body>
     <div class="game-container">
         <div class="game-header">
             <a href="index.html" class="back-btn">← Вернуться</a>
-            <div class="score">🏙️ Баллы: <span id="score">0</span></div>
+            <div class="stats-panel">
+                <div class="stat"><span>⭐</span><span id="score">0</span></div>
+                <div class="stat"><span>❤️</span><span id="lives">3</span></div>
+                <div class="stat"><span>📊</span><span id="questionCount">0/10</span></div>
+            </div>
         </div>
         
-        <div class="progress">
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
+        <div class="progress-section">
+            <div class="progress-bar-container"><div class="progress-fill" id="progressFill"></div></div>
+            <div class="progress-text" id="progressText">Испытание 1 из 10</div>
+        </div>
+        
+        <div class="timer-section">
+            <div class="timer-circle">
+                <svg width="80" height="80" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#e0d5b5" stroke-width="8"/>
+                    <circle class="timer-progress" cx="50" cy="50" r="40" fill="none" stroke="#f7d44a" stroke-width="8" stroke-linecap="round"/>
+                </svg>
+                <div class="timer-text" id="timerText">10</div>
             </div>
-            <div class="progress-text" id="progressText">Препятствие 1 из 5</div>
         </div>
         
         <div class="location">
             <div class="location-icon">🏙️</div>
-            <h3 id="locationTitle">Киев 1918 года</h3>
+            <h3>М.А. Булгаков</h3>
+            <p class="location-desc">«Белая гвардия» • Киев 1918 • Дом Турбиных</p>
         </div>
         
         <div id="gameContent"></div>
@@ -35,176 +46,93 @@
     
     <script>
         const questions = [
-            {
-                location: "Смутное время",
-                question: "Какая власть сменяет друг друга в Киеве в романе «Белая гвардия»?",
-                options: [
-                    "Большевики → Гетман → Петлюра",
-                    "Гетман → Петлюра → Большевики",
-                    "Петлюра → Гетман → Большевики"
-                ],
-                correct: 1,
-                explanation: "Сначала власть принадлежит гетману Скоропадскому, затем Киев захватывает Петлюра, а позже приходят большевики."
-            },
-            {
-                location: "Дом Турбиных",
-                question: "Какой предмет является символом дома Турбиных в романе?",
-                options: [
-                    "Рояль",
-                    "Кремовые шторы",
-                    "Библиотека"
-                ],
-                correct: 1,
-                explanation: "Кремовые шторы — символ уюта и защищенности дома Турбиных. «Но всегда, и в самые страшные годы, кремовые шторы...»"
-            },
-            {
-                location: "Алексей Турбин",
-                question: "Что происходит с Алексеем Турбиным после того, как он пытается пробраться к петлюровцам?",
-                options: [
-                    "Его убивают",
-                    "Его ранят и спасает Юлия Рейс",
-                    "Он присоединяется к петлюровцам"
-                ],
-                correct: 1,
-                explanation: "Алексей ранен, его спасает незнакомка Юлия Рейс, которая ухаживает за ним."
-            },
-            {
-                location: "Сон Алексея",
-                question: "Что символизирует сон Алексея Турбина о рае?",
-                options: [
-                    "Его желание умереть",
-                    "Мысль о том, что все люди равны перед Богом",
-                    "Его любовь к Юлии"
-                ],
-                correct: 1,
-                explanation: "Во сне Алексей видит, как большевики, офицеры и петлюровцы вместе попадают в рай, что говорит о равенстве всех перед высшим судом."
-            },
-            {
-                location: "Финал",
-                question: "Чем заканчивается роман «Белая гвардия»?",
-                options: [
-                    "Гибелью всей семьи Турбиных",
-                    "Приходом большевиков и надеждой на будущее",
-                    "Эмиграцией Турбиных"
-                ],
-                correct: 1,
-                explanation: "Роман заканчивается приходом большевиков и фразой: «Всё пройдет. Страдания, муки, кровь... Но звёзды останутся». Это надежда на мирное будущее."
-            }
+            { book: "Белая гвардия", text: "Дом Турбиных находится на...", options: ["Набережной", "Алексеевском спуске", "Крещатике", "Подоле"], correct: 1, explanation: "Алексеевский спуск, 13." },
+            { book: "Белая гвардия", text: "Символ дома Турбиных?", options: ["Кремовые шторы", "Библиотека", "Рояль", "Печка"], correct: 0, explanation: "Кремовые шторы." },
+            { book: "Белая гвардия", text: "Кто спасает Алексея Турбина?", options: ["Елена", "Юлия Рейс", "Николка", "Мышлаевский"], correct: 1, explanation: "Юлия Рейс." },
+            { book: "Белая гвардия", text: "Как зовут сестру Турбиных?", options: ["Наташа", "Елена", "Анна", "Варвара"], correct: 1, explanation: "Елена." },
+            { book: "Белая гвардия", text: "Порядок смены власти в Киеве?", options: ["Б→Г→П", "Г→П→Б", "П→Г→Б", "Б→П→Г"], correct: 1, explanation: "Гетман→Петлюра→Большевики." },
+            { book: "Белая гвардия", text: "Кто погибает, спасая юнкеров?", options: ["Алексей", "Николка", "Най-Турс", "Мышлаевский"], correct: 2, explanation: "Най-Турс." },
+            { book: "Белая гвардия", text: "Что снится Алексею после ранения?", options: ["Война", "Рай", "Дом", "Любовь"], correct: 1, explanation: "Рай, где все равны." },
+            { book: "Белая гвардия", text: "Профессия Алексея Турбина?", options: ["Врач", "Военный", "Писатель", "Адвокат"], correct: 0, explanation: "Врач." },
+            { book: "Белая гвардия", text: "Что с Николкой в финале?", options: ["Погибает", "Эмигрирует", "Остаётся", "Женится"], correct: 2, explanation: "Остаётся в Киеве." },
+            { book: "Белая гвардия", text: "Финальная фраза романа?", options: ["Всё пройдёт", "Звёзды останутся", "Всё будет правильно", "Мир построен"], correct: 1, explanation: "«Но звёзды останутся»." }
         ];
         
-        let currentQuestion = 0;
-        let score = 0;
-        let answerLocked = false;
+        let currentQuestion = 0, score = 0, lives = 3, timeLeft = 10, timerInterval = null, answerLocked = false;
+        const totalQuestions = questions.length;
         
-        const scoreElement = document.getElementById('score');
-        const progressFill = document.getElementById('progressFill');
-        const progressText = document.getElementById('progressText');
-        const gameContent = document.getElementById('gameContent');
+        const scoreEl = document.getElementById('score'), livesEl = document.getElementById('lives'), qCountEl = document.getElementById('questionCount');
+        const progressFill = document.getElementById('progressFill'), progressText = document.getElementById('progressText'), gameContent = document.getElementById('gameContent');
+        const timerText = document.getElementById('timerText'), timerProgress = document.querySelector('.timer-progress');
+        const circumference = 2 * Math.PI * 40;
         
-        function updateProgress() {
-            const percent = (currentQuestion / questions.length) * 100;
-            progressFill.style.width = percent + '%';
-            progressText.textContent = `Препятствие ${currentQuestion + 1} из ${questions.length}`;
-            scoreElement.textContent = score;
+        function updateUI() {
+            scoreEl.textContent = score; livesEl.textContent = lives; qCountEl.textContent = `${currentQuestion}/${totalQuestions}`;
+            progressFill.style.width = (currentQuestion / totalQuestions) * 100 + '%';
+            progressText.textContent = `Испытание ${currentQuestion + 1} из ${totalQuestions}`;
+        }
+        
+        function playSound(type) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator(), gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                if (type === 'correct') { osc.frequency.value = 880; gain.gain.value = 0.15; osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3); osc.stop(ctx.currentTime + 0.3); }
+                else if (type === 'wrong') { osc.frequency.value = 440; gain.gain.value = 0.15; osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.4); osc.stop(ctx.currentTime + 0.4); }
+                else if (type === 'timeout') { osc.frequency.value = 220; gain.gain.value = 0.2; osc.start(); setTimeout(() => osc.frequency.value = 110, 200); gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.8); osc.stop(ctx.currentTime + 0.8); }
+            } catch(e) {}
+        }
+        
+        function stopTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
+        
+        function startTimer(onTimeout) {
+            stopTimer(); timeLeft = 10; timerText.textContent = timeLeft; timerProgress.style.strokeDasharray = circumference; timerProgress.style.strokeDashoffset = 0;
+            timerInterval = setInterval(() => {
+                if (answerLocked) return;
+                timeLeft--; timerText.textContent = timeLeft;
+                timerProgress.style.strokeDashoffset = circumference - (timeLeft / 10) * circumference;
+                if (timeLeft <= 3) timerText.classList.add('timer-warning'); else timerText.classList.remove('timer-warning');
+                if (timeLeft <= 0) { stopTimer(); playSound('timeout'); onTimeout(); }
+            }, 1000);
         }
         
         function showFinalScreen() {
-            const totalPossible = questions.length * 10;
-            const percent = (score / totalPossible) * 100;
-            let prizeQuote = "";
-            let prizeIcon = "";
-            
-            if (percent >= 80) {
-                prizeQuote = "«Никогда не беги крысой в неизвестность... Но главное — не беги» — М.А. Булгаков";
-                prizeIcon = "🏆";
-            } else if (percent >= 50) {
-                prizeQuote = "«Всё будет правильно. На этом построен мир» — М.А. Булгаков";
-                prizeIcon = "📖";
-            } else {
-                prizeQuote = "«А звёзды останутся...» Перечитай роман и попробуй снова!";
-                prizeIcon = "🔄";
-            }
-            
-            gameContent.innerHTML = `
-                <div class="final-screen">
-                    <div class="final-icon">${prizeIcon}</div>
-                    <h2>Киев пройден!</h2>
-                    <div class="final-score">${score} / ${totalPossible} баллов</div>
-                    <div class="prize">
-                        <strong>📜 Литературный приз:</strong><br>
-                        "${prizeQuote}"
-                    </div>
-                    <a href="index.html" class="reset-btn">Выбрать другого писателя →</a>
-                </div>
-            `;
+            let prizeQuote = score >= 80 ? "«Никогда не беги крысой...» — Булгаков" : (score >= 50 ? "«Всё будет правильно»" : "«А звёзды останутся...» Перечитай!");
+            gameContent.innerHTML = `<div class="final-screen"><div class="final-icon">${score >= 80 ? "🏆" : (score >= 50 ? "📖" : "🔄")}</div><h2>Киев пройден!</h2><div class="final-score">${score} / ${totalQuestions * 10} баллов</div><div class="prize"><strong>📜 Приз:</strong><br>"${prizeQuote}"</div><a href="index.html" class="reset-btn">Выбрать другого →</a></div>`;
+        }
+        
+        function showFeedback(isCorrect, message, explanation) {
+            const fb = document.getElementById('feedback');
+            if (fb) { fb.innerHTML = `${message}<br><small>${explanation}</small>`; fb.className = `feedback ${isCorrect ? 'correct-feedback' : 'wrong-feedback'}`; }
+        }
+        
+        function handleAnswer(isCorrect, explanation, correctAnswer, timeLeftAtAnswer) {
+            if (answerLocked) return;
+            answerLocked = true; stopTimer();
+            if (isCorrect) { score += 10 + Math.floor(timeLeftAtAnswer * 0.5); playSound('correct'); showFeedback(true, `✅ +${10 + Math.floor(timeLeftAtAnswer * 0.5)} баллов`, explanation); }
+            else { lives--; playSound('wrong'); showFeedback(false, `❌ Ответ: «${correctAnswer}»`, explanation); updateUI(); if (lives <= 0) { gameContent.innerHTML = `<div class="final-screen"><div class="final-icon">💀</div><h2>Поражение</h2><a href="index.html" class="reset-btn">Сначала →</a></div>`; return; } }
+            updateUI();
+            setTimeout(() => { currentQuestion++; updateUI(); if (currentQuestion >= totalQuestions) showFinalScreen(); else showQuestion(); }, 2000);
         }
         
         function showQuestion() {
-            if (currentQuestion >= questions.length) {
-                showFinalScreen();
-                return;
-            }
-            
-            const q = questions[currentQuestion];
-            
-            gameContent.innerHTML = `
-                <div class="location">
-                    <div class="location-icon">🏙️</div>
-                    <h3>${q.location}</h3>
-                </div>
-                <div class="question-card">
-                    <div class="question-text">${q.question}</div>
-                    <div class="options" id="options">
-                        ${q.options.map((opt, idx) => `<div class="option" data-index="${idx}">${opt}</div>`).join('')}
-                    </div>
-                    <button class="next-btn" id="nextBtn" disabled>Далее →</button>
-                    <div id="feedback" class="feedback"></div>
-                </div>
-            `;
-            
-            answerLocked = false;
-            
+            if (currentQuestion >= totalQuestions) return;
+            const q = questions[currentQuestion]; answerLocked = false;
+            gameContent.innerHTML = `<div class="question-card"><div class="question-book">📖 ${q.book}</div><div class="question-text">${q.text}</div><div class="options" id="options">${q.options.map((opt, i) => `<div class="option" data-index="${i}">${opt}</div>`).join('')}</div><div id="feedback" class="feedback"></div></div>`;
             const options = document.querySelectorAll('.option');
-            const nextBtn = document.getElementById('nextBtn');
-            const feedbackDiv = document.getElementById('feedback');
-            
-            options.forEach(opt => {
-                opt.addEventListener('click', () => {
-                    if (answerLocked) return;
-                    
-                    const selectedIdx = parseInt(opt.dataset.index);
-                    const isCorrect = (selectedIdx === q.correct);
-                    
-                    if (isCorrect) {
-                        score += 10;
-                        scoreElement.textContent = score;
-                        opt.classList.add('correct');
-                        feedbackDiv.innerHTML = `✅ Правильно! ${q.explanation}`;
-                        feedbackDiv.className = 'feedback correct-feedback';
-                    } else {
-                        opt.classList.add('wrong');
-                        const correctText = q.options[q.correct];
-                        feedbackDiv.innerHTML = `❌ Неправильно. Правильный ответ: «${correctText}». ${q.explanation}`;
-                        feedbackDiv.className = 'feedback wrong-feedback';
-                        
-                        options[q.correct].classList.add('correct');
-                    }
-                    
-                    answerLocked = true;
-                    options.forEach(o => o.classList.add('disabled'));
-                    nextBtn.disabled = false;
-                });
-            });
-            
-            nextBtn.addEventListener('click', () => {
-                currentQuestion++;
-                updateProgress();
-                showQuestion();
+            options.forEach(opt => opt.addEventListener('click', () => {
+                if (answerLocked) return;
+                const idx = parseInt(opt.dataset.index), isCorrect = idx === q.correct;
+                if (isCorrect) opt.classList.add('correct'); else { opt.classList.add('wrong'); options[q.correct].classList.add('correct'); }
+                handleAnswer(isCorrect, q.explanation, q.options[q.correct], timeLeft);
+            }));
+            startTimer(() => {
+                if (!answerLocked) { lives--; updateUI(); playSound('timeout'); showFeedback(false, `⏰ Время! Ответ: «${q.options[q.correct]}»`, q.explanation); answerLocked = true; document.querySelectorAll('.option')[q.correct].classList.add('correct');
+                setTimeout(() => { currentQuestion++; updateUI(); if (lives <= 0) gameContent.innerHTML = `<div class="final-screen"><div class="final-icon">💀</div><h2>Поражение</h2><a href="index.html" class="reset-btn">Сначала →</a></div>`; else if (currentQuestion >= totalQuestions) showFinalScreen(); else showQuestion(); }, 2000); }
             });
         }
         
-        updateProgress();
-        showQuestion();
+        updateUI(); showQuestion();
     </script>
 </body>
 </html>

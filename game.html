@@ -3,68 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Литературная бродилка</title>
+    <title>Литературный квест</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="game-container">
         <div class="game-header">
             <a href="index.html" class="back-btn">← Главное меню</a>
-            <div class="stats">
-                <div class="stat">❤️ Жизни: <span id="lives">3</span></div>
-                <div class="stat">⭐ Баллы: <span id="score">0</span></div>
-                <div class="stat">📖 Ходов: <span id="moves">0</span></div>
+            <div class="stats-panel">
+                <div class="stat">
+                    <span>⭐</span>
+                    <span id="score">0</span>
+                </div>
+                <div class="stat">
+                    <span>❤️</span>
+                    <span id="lives">3</span>
+                </div>
+                <div class="stat">
+                    <span>📊</span>
+                    <span id="questionCount">0/10</span>
+                </div>
             </div>
         </div>
         
-        <div class="game-board" id="gameBoard"></div>
-        
-        <div class="info-footer">
-            <p>👆 Нажми на клетку рядом с героем 📖, чтобы переместиться</p>
-            <p>❓ Вопросы | 📜 Бонусы | ⚡ Ловушки | 🏆 Финиш</p>
+        <div class="progress-section">
+            <div class="progress-bar-container">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Испытание 1 из 10</div>
         </div>
+        
+        <div class="timer-section">
+            <div class="timer-circle">
+                <svg class="timer-svg" width="80" height="80" viewBox="0 0 100 100">
+                    <circle class="timer-bg" cx="50" cy="50" r="40" fill="none" stroke="#e0d5b5" stroke-width="8"/>
+                    <circle class="timer-progress" cx="50" cy="50" r="40" fill="none" stroke="#f7d44a" stroke-width="8" stroke-linecap="round"/>
+                </svg>
+                <div class="timer-text" id="timerText">10</div>
+            </div>
+        </div>
+        
+        <div class="location" id="location">
+            <div class="location-icon" id="locationIcon">🏔️</div>
+            <h3 id="locationTitle">Загрузка...</h3>
+        </div>
+        
+        <div id="gameContent"></div>
     </div>
     
-    <div class="modal" id="questionModal">
-        <div class="modal-content">
-            <h3>📖 Испытание</h3>
-            <div class="question" id="questionText"></div>
-            <div class="modal-options" id="modalOptions"></div>
-            <div id="modalFeedback" style="font-size: 14px; margin-top: 10px;"></div>
-        </div>
-    </div>
+    <audio id="correctSound" preload="auto">
+        <source src="data:audio/wav;base64,U3RlcmVv" type="audio/wav">
+    </audio>
+    <audio id="wrongSound" preload="auto">
+        <source src="data:audio/wav;base64,U3RlcmVv" type="audio/wav">
+    </audio>
+    <audio id="timeoutSound" preload="auto">
+        <source src="data:audio/wav;base64,U3RlcmVv" type="audio/wav">
+    </audio>
     
     <script>
-        // Данные для каждого мира
+        // ========== ДАННЫЕ ПО ПИСАТЕЛЯМ (10 вопросов на каждого) ==========
         const worldsData = {
             lermontov: {
-                name: "Кавказские горы",
+                name: "М.Ю. Лермонтов",
+                icon: "🏔️",
+                bgGradient: "linear-gradient(135deg, #3a5e3a 0%, #2c4a2c 100%)",
                 questions: [
-                    { text: "Кто написал роман «Герой нашего времени»?", options: ["А.С. Пушкин", "М.Ю. Лермонтов", "Л.Н. Толстой"], correct: 1, explanation: "Михаил Юрьевич Лермонтов — автор романа «Герой нашего времени»." },
-                    { text: "Как зовут главного героя романа?", options: ["Евгений Онегин", "Григорий Печорин", "Алексей Турбин"], correct: 1, explanation: "Печорин Григорий Александрович — главный герой." },
-                    { text: "С кем дуэль у Печорина?", options: ["С Грушницким", "С Максимом Максимычем", "С Вернером"], correct: 0, explanation: "Дуэль была с Грушницким." },
-                    { text: "Как зовут девушку, которую любил Печорин?", options: ["Княжна Мери", "Вера", "Бэла"], correct: 1, explanation: "Вера — единственная женщина, которую Печорин любил по-настоящему." },
-                    { text: "Что происходит с Печориным в конце?", options: ["Женится", "Умирает в Персии", "Становится генералом"], correct: 1, explanation: "Печорин умирает по дороге из Персии." }
+                    { book: "Герой нашего времени", text: "Как зовут главного героя романа «Герой нашего времени»?", options: ["Евгений Онегин", "Григорий Печорин", "Александр Чацкий", "Дмитрий Рудин"], correct: 1, explanation: "Печорин Григорий Александрович — главный герой романа." },
+                    { book: "Герой нашего времени", text: "С кем Печорин стреляется на дуэли?", options: ["С Максимом Максимычем", "С Грушницким", "С Вернером", "С княжной Мери"], correct: 1, explanation: "Дуэль была с Грушницким из-за княжны Мери." },
+                    { book: "Герой нашего времени", text: "Как зовут девушку, которую Печорин похищает?", options: ["Княжна Мери", "Вера", "Бэла", "Ундина"], correct: 2, explanation: "Бэла — черкешенка, которую Печорин похищает." },
+                    { book: "Герой нашего времени", text: "В какой главе романа происходит история с контрабандистами?", options: ["Бэла", "Максим Максимыч", "Тамань", "Княжна Мери"], correct: 2, explanation: "В главе «Тамань» Печорин сталкивается с контрабандистами." },
+                    { book: "Герой нашего времени", text: "Кто убивает Вулича в романе?", options: ["Печорин", "Грушницкий", "Пьяный казак", "Контрабандисты"], correct: 2, explanation: "Вулич погибает от руки пьяного казака в главе «Фаталист»." },
+                    { book: "Герой нашего времени", text: "Как Печорин относится к судьбе?", options: ["Верит в предопределение", "Не верит в судьбу", "Сомневается", "Игнорирует"], correct: 0, explanation: "Печорин верит в фатум, но проверяет его." },
+                    { book: "Герой нашего времени", text: "Как зовут офицера, который рассказывает историю о Бэле?", options: ["Печорин", "Вернер", "Максим Максимыч", "Грушницкий"], correct: 2, explanation: "Максим Максимыч рассказывает историю о Бэле." },
+                    { book: "Герой нашего времени", text: "Где происходит действие главы «Княжна Мери»?", options: ["Тамань", "Пятигорск", "Кисловодск", "Тифлис"], correct: 1, explanation: "Действие происходит в Пятигорске." },
+                    { book: "Герой нашего времени", text: "Что происходит с Печориным в конце романа?", options: ["Женится", "Умирает в Персии", "Становится генералом", "Эмигрирует"], correct: 1, explanation: "Печорин умирает по дороге из Персии." },
+                    { book: "Герой нашего времени", text: "Какой литературный тип представляет Печорин?", options: ["Лишний человек", "Маленький человек", "Романтический герой", "Герой-любовник"], correct: 0, explanation: "Печорин — классический «лишний человек»." }
                 ]
             },
             tolstoy: {
-                name: "Бородинское поле",
+                name: "Л.Н. Толстой",
+                icon: "⚔️",
+                bgGradient: "linear-gradient(135deg, #5d3a1a 0%, #8b5a2b 100%)",
                 questions: [
-                    { text: "Сколько томов в романе «Война и мир»?", options: ["3", "4", "5"], correct: 1, explanation: "Роман состоит из 4 томов." },
-                    { text: "Кто командует русской армией при Бородино?", options: ["Наполеон", "Кутузов", "Багратион"], correct: 1, explanation: "Кутузов — главнокомандующий." },
-                    { text: "Кого любит Наташа Ростова?", options: ["Пьера", "Андрея", "Анатоля"], correct: 0, explanation: "В конце романа Наташа выходит замуж за Пьера." },
-                    { text: "Что происходит с Андреем Болконским?", options: ["Женится", "Умирает", "Эмигрирует"], correct: 1, explanation: "Андрей умирает от ранения." },
-                    { text: "Какую фамилию носит семья Наташи?", options: ["Болконские", "Курагины", "Ростовы"], correct: 2, explanation: "Наташа — Ростова." }
+                    { book: "Война и мир", text: "Сколько томов в романе «Война и мир»?", options: ["3", "4", "5", "6"], correct: 1, explanation: "Роман состоит из 4 томов." },
+                    { book: "Война и мир", text: "Кто командует русской армией при Бородино?", options: ["Наполеон", "Кутузов", "Багратион", "Барклай-де-Толли"], correct: 1, explanation: "Кутузов — главнокомандующий русской армией." },
+                    { book: "Война и мир", text: "За кого выходит замуж Наташа Ростова?", options: ["Андрей Болконский", "Пьер Безухов", "Анатоль Курагин", "Николай Ростов"], correct: 1, explanation: "В конце романа Наташа выходит замуж за Пьера Безухова." },
+                    { book: "Война и мир", text: "Что происходит с Андреем Болконским?", options: ["Женится на Наташе", "Умирает от ранения", "Эмигрирует", "Становится декабристом"], correct: 1, explanation: "Андрей Болконский умирает от ранения после Бородинского сражения." },
+                    { book: "Война и мир", text: "Какую фамилию носит семья Наташи?", options: ["Болконские", "Курагины", "Ростовы", "Безуховы"], correct: 2, explanation: "Наташа — Ростова, дочь графа Ильи Андреевича Ростова." },
+                    { book: "Война и мир", text: "Кто из героев романа предлагает отдать подводы для раненых?", options: ["Андрей Болконский", "Пьер Безухов", "Наташа Ростова", "Кутузов"], correct: 2, explanation: "Наташа уговаривает родителей отдать подводы для раненых." },
+                    { book: "Война и мир", text: "Какое сражение описывается в 3 томе романа?", options: ["Аустерлиц", "Шенграбен", "Бородино", "Тарутино"], correct: 2, explanation: "Бородинское сражение — центральное событие 3 тома." },
+                    { book: "Война и мир", text: "Кто такой Платон Каратаев для Пьера?", options: ["Враг", "Учитель мудрости", "Сослуживец", "Родственник"], correct: 1, explanation: "Платон Каратаев становится для Пьера символом народной мудрости." },
+                    { book: "Война и мир", text: "Что символизирует дуб в романе?", options: ["Смерть", "Жизнь и возрождение", "Старость", "Войну"], correct: 1, explanation: "Дуб символизирует внутреннее возрождение князя Андрея." },
+                    { book: "Война и мир", text: "Какова главная мысль романа «Война и мир»?", options: ["Героизм личности", "Роль народа в истории", "Любовная линия", "Критика монархии"], correct: 1, explanation: "Толстой утверждает, что историей движут народные массы." }
                 ]
             },
             bulgakov: {
-                name: "Киев 1918",
+                name: "М.А. Булгаков",
+                icon: "🏙️",
+                bgGradient: "linear-gradient(135deg, #2c2c3a 0%, #1a1a2a 100%)",
                 questions: [
-                    { text: "Как называется дом семьи Турбиных?", options: ["Дом на набережной", "Дом Турбиных", "Дом на Алексеевском спуске"], correct: 2, explanation: "Дом находится на Алексеевском спуске." },
-                    { text: "Что является символом дома?", options: ["Кремовые шторы", "Библиотека", "Рояль"], correct: 0, explanation: "Кремовые шторы — символ уюта." },
-                    { text: "Кто спасает Алексея Турбина?", options: ["Елена", "Юлия Рейс", "Николка"], correct: 1, explanation: "Юлия Рейс спасает раненого Алексея." },
-                    { text: "Как зовут сестру Турбиных?", options: ["Наташа", "Елена", "Анна"], correct: 1, explanation: "Елена Турбина — сестра." },
-                    { text: "Чем заканчивается роман?", options: ["Гибелью семьи", "Приходом большевиков", "Эмиграцией"], correct: 1, explanation: "Роман заканчивается приходом большевиков." }
+                    { book: "Белая гвардия", text: "Как называется дом семьи Турбиных?", options: ["Дом на набережной", "Дом Турбиных", "Дом на Алексеевском спуске", "Дворянское гнездо"], correct: 2, explanation: "Дом находится на Алексеевском спуске, 13." },
+                    { book: "Белая гвардия", text: "Что является символом дома Турбиных?", options: ["Кремовые шторы", "Библиотека", "Рояль", "Печка"], correct: 0, explanation: "Кремовые шторы — символ уюта и защищенности." },
+                    { book: "Белая гвардия", text: "Кто спасает раненого Алексея Турбина?", options: ["Елена", "Юлия Рейс", "Николка", "Мышлаевский"], correct: 1, explanation: "Юлия Рейс спасает Алексея." },
+                    { book: "Белая гвардия", text: "Как зовут сестру Турбиных?", options: ["Наташа", "Елена", "Анна", "Варвара"], correct: 1, explanation: "Елена Турбина — сестра Алексея и Николки." },
+                    { book: "Белая гвардия", text: "Какая власть сменяет друг друга в Киеве?", options: ["Большевики→Гетман→Петлюра", "Гетман→Петлюра→Большевики", "Петлюра→Гетман→Большевики", "Большевики→Петлюра→Гетман"], correct: 1, explanation: "Сначала гетман, затем Петлюра, потом большевики." },
+                    { book: "Белая гвардия", text: "Кто из героев погибает, пытаясь спасти гетмана?", options: ["Алексей Турбин", "Николка Турбин", "Най-Турс", "Мышлаевский"], correct: 2, explanation: "Полковник Най-Турс погибает, прикрывая юнкеров." },
+                    { book: "Белая гвардия", text: "Что снится Алексею Турбину после ранения?", options: ["Война", "Рай", "Дом", "Любовь"], correct: 1, explanation: "Алексею снится рай, где все люди равны перед Богом." },
+                    { book: "Белая гвардия", text: "Какую профессию имеет Алексей Турбин?", options: ["Врач", "Военный", "Писатель", "Адвокат"], correct: 0, explanation: "Алексей Турбин — врач по образованию." },
+                    { book: "Белая гвардия", text: "Что происходит с Николкой в финале?", options: ["Погибает", "Эмигрирует", "Остаётся в Киеве", "Женится"], correct: 2, explanation: "Николка остаётся в Киеве после прихода большевиков." },
+                    { book: "Белая гвардия", text: "Какая фраза завершает роман?", options: ["Всё пройдёт", "Звёзды останутся", "Всё будет правильно", "Мир построен на этом"], correct: 1, explanation: "«Но звёзды останутся» — надежда на мирное будущее." }
                 ]
             }
         };
@@ -73,204 +121,278 @@
         const world = localStorage.getItem('currentWorld') || 'lermontov';
         const worldData = worldsData[world];
         
+        // Устанавливаем фон
+        document.body.style.background = worldData.bgGradient;
+        document.getElementById('locationIcon').textContent = worldData.icon;
+        document.getElementById('locationTitle').textContent = worldData.name;
+        
         // Игровые переменные
-        let playerPos = { x: 0, y: 0 };
-        let lives = 3;
+        let currentQuestion = 0;
         let score = 0;
-        let moves = 0;
-        let gameActive = true;
-        let currentQuestionCallback = null;
+        let lives = 3;
+        let timeLeft = 10;
+        let timerInterval = null;
+        let answerLocked = false;
         
-        // Карта (5x5)
-        // 0 - обычная клетка, 1 - вопрос, 2 - бонус, 3 - ловушка, 4 - финиш
-        const map = [
-            [1, 0, 1, 0, 2],
-            [0, 1, 0, 3, 0],
-            [1, 0, 4, 0, 1],
-            [0, 3, 0, 1, 0],
-            [2, 0, 1, 0, 1]
-        ];
+        const totalQuestions = worldData.questions.length;
         
-        const cellIcons = {
-            0: "⬜",
-            1: "❓",
-            2: "📜",
-            3: "⚡",
-            4: "🏆"
-        };
-        
-        // Элементы DOM
-        const boardElement = document.getElementById('gameBoard');
-        const livesElement = document.getElementById('lives');
         const scoreElement = document.getElementById('score');
-        const movesElement = document.getElementById('moves');
-        const modal = document.getElementById('questionModal');
-        const questionText = document.getElementById('questionText');
-        const modalOptions = document.getElementById('modalOptions');
-        const modalFeedback = document.getElementById('modalFeedback');
+        const livesElement = document.getElementById('lives');
+        const questionCountElement = document.getElementById('questionCount');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const gameContent = document.getElementById('gameContent');
+        const timerText = document.getElementById('timerText');
+        const timerProgress = document.querySelector('.timer-progress');
+        
+        // Звуковые функции
+        function playSound(type) {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                const ctx = new AudioContext();
+                const oscillator = ctx.createOscillator();
+                const gain = ctx.createGain();
+                oscillator.connect(gain);
+                gain.connect(ctx.destination);
+                
+                if (type === 'correct') {
+                    oscillator.frequency.value = 880;
+                    gain.gain.value = 0.2;
+                    oscillator.start();
+                    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3);
+                    oscillator.stop(ctx.currentTime + 0.3);
+                } else if (type === 'wrong') {
+                    oscillator.frequency.value = 440;
+                    gain.gain.value = 0.2;
+                    oscillator.start();
+                    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.4);
+                    oscillator.stop(ctx.currentTime + 0.4);
+                } else if (type === 'timeout') {
+                    oscillator.frequency.value = 220;
+                    gain.gain.value = 0.3;
+                    oscillator.start();
+                    setTimeout(() => {
+                        oscillator.frequency.value = 110;
+                    }, 200);
+                    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.8);
+                    oscillator.stop(ctx.currentTime + 0.8);
+                }
+            } catch(e) {}
+        }
         
         function updateUI() {
-            livesElement.textContent = lives;
             scoreElement.textContent = score;
-            movesElement.textContent = moves;
+            livesElement.textContent = lives;
+            questionCountElement.textContent = `${currentQuestion}/${totalQuestions}`;
+            const percent = (currentQuestion / totalQuestions) * 100;
+            progressFill.style.width = percent + '%';
+            progressText.textContent = `Испытание ${currentQuestion + 1} из ${totalQuestions}`;
         }
         
-        function checkWin() {
-            if (map[playerPos.y][playerPos.x] === 4) {
-                gameActive = false;
-                const totalScore = score + (lives * 10);
-                boardElement.innerHTML = `
-                    <div class="game-message" style="grid-column: span 5;">
-                        <h2>🏆 ПОБЕДА! 🏆</h2>
-                        <p>Вы прошли ${worldData.name}!</p>
-                        <div class="final-score">${totalScore} баллов</div>
-                        <p>Сделано ходов: ${moves}</p>
-                        <p>Осталось жизней: ${lives}</p>
-                        <a href="index.html" class="restart-btn">Выбрать другой мир →</a>
-                    </div>
-                `;
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
             }
         }
         
-        function checkLose() {
-            if (lives <= 0) {
-                gameActive = false;
-                boardElement.innerHTML = `
-                    <div class="game-message" style="grid-column: span 5;">
-                        <h2>💀 ПОРАЖЕНИЕ 💀</h2>
-                        <p>Вы не смогли пройти ${worldData.name}...</p>
-                        <div class="final-score">${score} баллов</div>
-                        <a href="index.html" class="restart-btn">Попробовать снова →</a>
-                    </div>
-                `;
-            }
+        function startTimer(onTimeout) {
+            stopTimer();
+            timeLeft = 10;
+            timerText.textContent = timeLeft;
+            const circumference = 2 * Math.PI * 40;
+            const dashArray = circumference;
+            timerProgress.style.strokeDasharray = dashArray;
+            
+            timerInterval = setInterval(() => {
+                if (answerLocked) return;
+                
+                timeLeft--;
+                timerText.textContent = timeLeft;
+                
+                const offset = (timeLeft / 10) * circumference;
+                timerProgress.style.strokeDashoffset = dashArray - offset;
+                
+                if (timeLeft <= 3) {
+                    timerText.classList.add('timer-warning');
+                } else {
+                    timerText.classList.remove('timer-warning');
+                }
+                
+                if (timeLeft <= 0) {
+                    stopTimer();
+                    playSound('timeout');
+                    onTimeout();
+                }
+            }, 1000);
         }
         
-        function showQuestion(questionIndex, onAnswer) {
-            const q = worldData.questions[questionIndex % worldData.questions.length];
-            questionText.textContent = q.text;
-            modalOptions.innerHTML = '';
-            modalFeedback.innerHTML = '';
+        function showFinalScreen() {
+            const totalPossible = totalQuestions * 10;
+            const percent = (score / totalPossible) * 100;
+            let prizeQuote = "";
+            let prizeIcon = "";
             
-            q.options.forEach((opt, idx) => {
-                const optionDiv = document.createElement('div');
-                optionDiv.className = 'modal-option';
-                optionDiv.textContent = opt;
-                optionDiv.onclick = () => {
-                    if (idx === q.correct) {
-                        modalFeedback.innerHTML = `✅ Правильно! ${q.explanation}`;
-                        modalFeedback.style.color = '#155724';
-                        onAnswer(true);
-                    } else {
-                        modalFeedback.innerHTML = `❌ Неправильно. Правильный ответ: «${q.options[q.correct]}». ${q.explanation}`;
-                        modalFeedback.style.color = '#721c24';
-                        onAnswer(false);
-                    }
-                    setTimeout(() => {
-                        modal.classList.remove('active');
-                    }, 1500);
-                };
-                modalOptions.appendChild(optionDiv);
-            });
-            
-            modal.classList.add('active');
-        }
-        
-        function handleCellClick(x, y) {
-            if (!gameActive) return;
-            
-            // Проверка: можно ли переместиться (только соседние клетки)
-            const dx = Math.abs(x - playerPos.x);
-            const dy = Math.abs(y - playerPos.y);
-            if ((dx + dy) !== 1) return;
-            
-            moves++;
-            playerPos = { x, y };
-            updateUI();
-            renderBoard();
-            
-            const cellType = map[y][x];
-            
-            if (cellType === 1) {
-                // Вопрос
-                const questionIndex = moves;
-                showQuestion(questionIndex, (isCorrect) => {
-                    if (isCorrect) {
-                        score += 10;
-                        updateUI();
-                        map[y][x] = 0;
-                        renderBoard();
-                    } else {
-                        lives--;
-                        updateUI();
-                        checkLose();
-                        if (gameActive) {
-                            renderBoard();
-                        }
-                    }
-                });
-            } else if (cellType === 2) {
-                // Бонус
-                score += 15;
-                updateUI();
-                map[y][x] = 0;
-                renderBoard();
-                modalFeedback.innerHTML = `📜 Бонус! +15 баллов`;
-                modalFeedback.style.color = '#155724';
-                modal.classList.add('active');
-                setTimeout(() => modal.classList.remove('active'), 1000);
-            } else if (cellType === 3) {
-                // Ловушка
-                lives--;
-                updateUI();
-                map[y][x] = 0;
-                renderBoard();
-                modalFeedback.innerHTML = `⚡ Ловушка! -1 жизнь`;
-                modalFeedback.style.color = '#721c24';
-                modal.classList.add('active');
-                setTimeout(() => modal.classList.remove('active'), 1000);
-                checkLose();
+            if (percent >= 80) {
+                if (world === 'lermontov') prizeQuote = "«А что такое счастье?.. Я несчастлив, потому что во мне нет этой гордости...» — М.Ю. Лермонтов";
+                else if (world === 'tolstoy') prizeQuote = "«Всё, что я знаю, я знаю благодаря тому, что люблю» — Л.Н. Толстой";
+                else prizeQuote = "«Никогда не беги крысой в неизвестность...» — М.А. Булгаков";
+                prizeIcon = "🏆";
+            } else if (percent >= 50) {
+                if (world === 'lermontov') prizeQuote = "«Судьба как-то всегда приводила меня к развязке чужих драм...»";
+                else if (world === 'tolstoy') prizeQuote = "«Нет величия там, где нет простоты, добра и правды»";
+                else prizeQuote = "«Всё будет правильно. На этом построен мир»";
+                prizeIcon = "📖";
             } else {
-                checkWin();
+                if (world === 'lermontov') prizeQuote = "«Скучно мне, потому что я не знаю, зачем живу...» Перечитай роман!";
+                else if (world === 'tolstoy') prizeQuote = "«Чем больше мы живём духом, тем менее зависим от внешнего...»";
+                else prizeQuote = "«А звёзды останутся...» Перечитай роман!";
+                prizeIcon = "🔄";
             }
+            
+            gameContent.innerHTML = `
+                <div class="final-screen">
+                    <div class="final-icon">${prizeIcon}</div>
+                    <h2>${worldData.name} пройден!</h2>
+                    <div class="final-score">${score} / ${totalPossible} баллов</div>
+                    <div class="prize">
+                        <strong>📜 Литературный приз:</strong><br>
+                        "${prizeQuote}"
+                    </div>
+                    <a href="index.html" class="reset-btn">Выбрать другого писателя →</a>
+                </div>
+            `;
         }
         
-        function renderBoard() {
-            boardElement.innerHTML = '';
-            for (let y = 0; y < 5; y++) {
-                for (let x = 0; x < 5; x++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    
-                    if (playerPos.x === x && playerPos.y === y) {
-                        cell.textContent = '📖';
-                        cell.classList.add('player-cell');
-                    } else {
-                        const cellType = map[y][x];
-                        cell.textContent = cellIcons[cellType] || '⬜';
-                        
-                        if (cellType === 1) cell.classList.add('obstacle');
-                        else if (cellType === 2) cell.classList.add('bonus');
-                        else if (cellType === 3) cell.classList.add('trap');
-                        else if (cellType === 4) cell.classList.add('finish');
-                    }
-                    
-                    if (gameActive && (Math.abs(x - playerPos.x) + Math.abs(y - playerPos.y)) === 1) {
-                        cell.style.cursor = 'pointer';
-                        cell.onclick = () => handleCellClick(x, y);
-                    } else {
-                        cell.style.cursor = 'default';
-                    }
-                    
-                    boardElement.appendChild(cell);
+        function handleAnswer(isCorrect, explanation, correctAnswer) {
+            if (answerLocked) return;
+            answerLocked = true;
+            stopTimer();
+            
+            if (isCorrect) {
+                const timeBonus = Math.floor(timeLeft * 0.5);
+                const points = 10 + timeBonus;
+                score += points;
+                playSound('correct');
+                showFeedback(true, `✅ Правильно! +${points} баллов (бонус за скорость)`, explanation);
+            } else {
+                lives--;
+                playSound('wrong');
+                showFeedback(false, `❌ Неправильно. Правильный ответ: «${correctAnswer}»`, explanation);
+                updateUI();
+                
+                if (lives <= 0) {
+                    gameContent.innerHTML = `
+                        <div class="final-screen">
+                            <div class="final-icon">💀</div>
+                            <h2>Поражение...</h2>
+                            <div class="final-score">${score} баллов</div>
+                            <p>У вас закончились жизни!</p>
+                            <a href="index.html" class="reset-btn">Попробовать снова →</a>
+                        </div>
+                    `;
+                    return;
                 }
             }
+            
+            updateUI();
+            
+            setTimeout(() => {
+                currentQuestion++;
+                updateUI();
+                
+                if (currentQuestion >= totalQuestions) {
+                    showFinalScreen();
+                } else {
+                    showQuestion();
+                }
+            }, 2000);
         }
         
-        // Начало игры
-        playerPos = { x: 0, y: 0 };
-        renderBoard();
+        function showFeedback(isCorrect, message, explanation) {
+            const feedbackDiv = document.getElementById('feedback');
+            if (feedbackDiv) {
+                feedbackDiv.innerHTML = `${message}<br><small>${explanation}</small>`;
+                feedbackDiv.className = `feedback ${isCorrect ? 'correct-feedback' : 'wrong-feedback'}`;
+            }
+        }
+        
+        function showQuestion() {
+            if (currentQuestion >= totalQuestions) return;
+            
+            const q = worldData.questions[currentQuestion];
+            answerLocked = false;
+            
+            gameContent.innerHTML = `
+                <div class="question-card">
+                    <div class="question-book">📖 ${q.book}</div>
+                    <div class="question-text">${q.text}</div>
+                    <div class="options" id="options">
+                        ${q.options.map((opt, idx) => `<div class="option" data-index="${idx}">${opt}</div>`).join('')}
+                    </div>
+                    <div id="feedback" class="feedback"></div>
+                </div>
+            `;
+            
+            const options = document.querySelectorAll('.option');
+            const feedbackDiv = document.getElementById('feedback');
+            
+            options.forEach(opt => {
+                opt.addEventListener('click', () => {
+                    if (answerLocked) return;
+                    
+                    const selectedIdx = parseInt(opt.dataset.index);
+                    const isCorrect = (selectedIdx === q.correct);
+                    const correctAnswer = q.options[q.correct];
+                    
+                    if (isCorrect) {
+                        opt.classList.add('correct');
+                    } else {
+                        opt.classList.add('wrong');
+                        options[q.correct].classList.add('correct');
+                    }
+                    
+                    handleAnswer(isCorrect, q.explanation, correctAnswer);
+                });
+            });
+            
+            startTimer(() => {
+                if (!answerLocked) {
+                    lives--;
+                    updateUI();
+                    playSound('timeout');
+                    showFeedback(false, `⏰ Время вышло! Правильный ответ: «${q.options[q.correct]}»`, q.explanation);
+                    answerLocked = true;
+                    
+                    const optionsDiv = document.querySelectorAll('.option');
+                    optionsDiv[q.correct].classList.add('correct');
+                    
+                    setTimeout(() => {
+                        currentQuestion++;
+                        updateUI();
+                        
+                        if (lives <= 0) {
+                            gameContent.innerHTML = `
+                                <div class="final-screen">
+                                    <div class="final-icon">💀</div>
+                                    <h2>Поражение...</h2>
+                                    <div class="final-score">${score} баллов</div>
+                                    <p>Время вышло, жизни кончились!</p>
+                                    <a href="index.html" class="reset-btn">Попробовать снова →</a>
+                                </div>
+                            `;
+                        } else if (currentQuestion >= totalQuestions) {
+                            showFinalScreen();
+                        } else {
+                            showQuestion();
+                        }
+                    }, 2000);
+                }
+            });
+        }
+        
         updateUI();
+        showQuestion();
     </script>
 </body>
 </html>

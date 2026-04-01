@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Толстой - Война и мир</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: linear-gradient(135deg, #5d3a1a 0%, #8b5a2b 100%); }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <a href="index.html" class="back-btn">← Вернуться</a>
+            <div class="stats-panel">
+                <div class="stat"><span>⭐</span><span id="score">0</span></div>
+                <div class="stat"><span>❤️</span><span id="lives">3</span></div>
+                <div class="stat"><span>📊</span><span id="questionCount">0/10</span></div>
+            </div>
+        </div>
+        
+        <div class="progress-section">
+            <div class="progress-bar-container"><div class="progress-fill" id="progressFill"></div></div>
+            <div class="progress-text" id="progressText">Испытание 1 из 10</div>
+        </div>
+        
+        <div class="timer-section">
+            <div class="timer-circle">
+                <svg width="80" height="80" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#e0d5b5" stroke-width="8"/>
+                    <circle class="timer-progress" cx="50" cy="50" r="40" fill="none" stroke="#f7d44a" stroke-width="8" stroke-linecap="round"/>
+                </svg>
+                <div class="timer-text" id="timerText">10</div>
+            </div>
+        </div>
+        
+        <div class="location">
+            <div class="location-icon">⚔️</div>
+            <h3>Л.Н. Толстой</h3>
+            <p class="location-desc">«Война и мир» • Бородино • Судьба России</p>
+        </div>
+        
+        <div id="gameContent"></div>
+    </div>
+    
+    <script>
+        const questions = [
+            { book: "Война и мир", text: "Сколько томов в романе?", options: ["3", "4", "5", "6"], correct: 1, explanation: "4 тома." },
+            { book: "Война и мир", text: "Кто командует русской армией при Бородино?", options: ["Наполеон", "Кутузов", "Багратион", "Барклай"], correct: 1, explanation: "Кутузов." },
+            { book: "Война и мир", text: "За кого выходит Наташа Ростова?", options: ["Андрей", "Пьер", "Анатоль", "Николай"], correct: 1, explanation: "За Пьера Безухова." },
+            { book: "Война и мир", text: "Что с Андреем Болконским?", options: ["Женится", "Умирает", "Эмигрирует", "Декабрист"], correct: 1, explanation: "Умирает от ранения." },
+            { book: "Война и мир", text: "Фамилия Наташи?", options: ["Болконская", "Курагина", "Ростова", "Безухова"], correct: 2, explanation: "Ростова." },
+            { book: "Война и мир", text: "Кто отдал подводы для раненых?", options: ["Андрей", "Пьер", "Наташа", "Кутузов"], correct: 2, explanation: "Наташа." },
+            { book: "Война и мир", text: "Главное сражение романа?", options: ["Аустерлиц", "Шенграбен", "Бородино", "Тарутино"], correct: 2, explanation: "Бородино." },
+            { book: "Война и мир", text: "Кто такой Платон Каратаев?", options: ["Враг", "Учитель", "Сослуживец", "Родственник"], correct: 1, explanation: "Символ мудрости." },
+            { book: "Война и мир", text: "Что символизирует дуб?", options: ["Смерть", "Возрождение", "Старость", "Войну"], correct: 1, explanation: "Возрождение Андрея." },
+            { book: "Война и мир", text: "Главная мысль романа?", options: ["Героизм", "Роль народа", "Любовь", "Критика"], correct: 1, explanation: "Историей движет народ." }
+        ];
+        
+        let currentQuestion = 0, score = 0, lives = 3, timeLeft = 10, timerInterval = null, answerLocked = false;
+        const totalQuestions = questions.length;
+        
+        const scoreEl = document.getElementById('score'), livesEl = document.getElementById('lives'), qCountEl = document.getElementById('questionCount');
+        const progressFill = document.getElementById('progressFill'), progressText = document.getElementById('progressText'), gameContent = document.getElementById('gameContent');
+        const timerText = document.getElementById('timerText'), timerProgress = document.querySelector('.timer-progress');
+        const circumference = 2 * Math.PI * 40;
+        
+        function updateUI() {
+            scoreEl.textContent = score; livesEl.textContent = lives; qCountEl.textContent = `${currentQuestion}/${totalQuestions}`;
+            progressFill.style.width = (currentQuestion / totalQuestions) * 100 + '%';
+            progressText.textContent = `Испытание ${currentQuestion + 1} из ${totalQuestions}`;
+        }
+        
+        function playSound(type) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator(), gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                if (type === 'correct') { osc.frequency.value = 880; gain.gain.value = 0.15; osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3); osc.stop(ctx.currentTime + 0.3); }
+                else if (type === 'wrong') { osc.frequency.value = 440; gain.gain.value = 0.15; osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.4); osc.stop(ctx.currentTime + 0.4); }
+                else if (type === 'timeout') { osc.frequency.value = 220; gain.gain.value = 0.2; osc.start(); setTimeout(() => osc.frequency.value = 110, 200); gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.8); osc.stop(ctx.currentTime + 0.8); }
+            } catch(e

@@ -50,7 +50,7 @@
                 <button class="play-btn" onclick="startGame('tolstoy')">Начать квест →</button>
             </div>
             
-            <!-- Булгаков -->
+            <!-- Булгаков (исправленная ссылка) -->
             <div class="world-card" data-world="bulgakov">
                 <div class="world-icon">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Bulgakov_%28cropped%29.jpg/200px-Bulgakov_%28cropped%29.jpg" 
@@ -77,6 +77,7 @@
     
     <script>
         function startGame(world) {
+            console.log("Starting game for world:", world);
             localStorage.setItem('currentWorld', world);
             window.location.href = 'game.html';
         }

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Булгаков - Киев 1918</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #2c2c3a 0%, #1a1a2a 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <a href="index.html" class="back-btn">← Вернуться</a>
+            <div class="score">🏙️ Баллы: <span id="score">0</span></div>
+        </div>
+        
+        <div class="progress">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Препятствие 1 из 5</div>
+        </div>
+        
+        <div class="location">
+            <div class="location-icon">🏙️</div>
+            <h3 id="locationTitle">Киев 1918 года</h3>
+        </div>
+        
+        <div id="gameContent"></div>
+    </div>
+    
+    <script>
+        const questions = [
+            {
+                location: "Смутное время",
+                question: "Какая власть сменяет друг друга в Киеве в романе «Белая гвардия»?",
+                options: [
+                    "Большевики → Гетман → Петлюра",
+                    "Гетман → Петлюра → Большевики",
+                    "Петлюра → Гетман → Большевики"
+                ],
+                correct: 1,
+                explanation: "Сначала власть принадлежит гетману Скоропадскому, затем Киев захватывает Петлюра, а позже приходят большевики."
+            },
+            {
+                location: "Дом Турбиных",
+                question: "Какой предмет является символом дома Турбиных в романе?",
+                options: [
+                    "Рояль",
+                    "Кремовые шторы",
+                    "Библиотека"
+                ],
+                correct: 1,
+                explanation: "Кремовые шторы — символ уюта и защищенности дома Турбиных. «Но всегда, и в самые страшные годы, кремовые шторы...»"
+            },
+            {
+                location: "Алексей Турбин",
+                question: "Что происходит с Алексеем Турбиным после того, как он пытается пробраться к петлюровцам?",
+                options: [
+                    "Его убивают",
+                    "Его ранят и спасает Юлия Рейс",
+                    "Он присоединяется к петлюровцам"
+                ],
+                correct: 1,
+                explanation: "Алексей ранен, его спасает незнакомка Юлия Рейс, которая ухаживает за ним."
+            },
+            {
+                location: "Сон Алексея",
+                question: "Что символизирует сон Алексея Турбина о рае?",
+                options: [
+                    "Его желание умереть",
+                    "Мысль о том, что все люди равны перед Богом",
+                    "Его любовь к Юлии"
+                ],
+                correct: 1,
+                explanation: "Во сне Алексей видит, как большевики, офицеры и петлюровцы вместе попадают в рай, что говорит о равенстве всех перед высшим судом."
+            },
+            {
+                location: "Финал",
+                question: "Чем заканчивается роман «Белая гвардия»?",
+                options: [
+                    "Гибелью всей семьи Турбиных",
+                    "Приходом большевиков и надеждой на будущее",
+                    "Эмиграцией Турбиных"
+                ],
+                correct: 1,
+                explanation: "Роман заканчивается приходом большевиков и фразой: «Всё пройдет. Страдания, муки, кровь... Но звёзды останутся». Это надежда на мирное будущее."
+            }
+        ];
+        
+        let currentQuestion = 0;
+        let score = 0;
+        let answerLocked = false;
+        
+        const scoreElement = document.getElementById('score');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const gameContent = document.getElementById('gameContent');
+        
+        function updateProgress() {
+            const percent = (currentQuestion / questions.length) * 100;
+            progressFill.style.width = percent + '%';
+            progressText.textContent = `Препятствие ${currentQuestion + 1} из ${questions.length}`;
+            scoreElement.textContent = score;
+        }
+        
+        function showFinalScreen() {
+            const totalPossible = questions.length * 10;
+            const percent = (score / totalPossible) * 100;
+            let prizeQuote = "";
+            let prizeIcon = "";
+            
+            if (percent >= 80) {
+                prizeQuote = "«Никогда не беги крысой в неизвестность... Но главное — не беги» — М.А. Булгаков";
+                prizeIcon = "🏆";
+            } else if (percent >= 50) {
+                prizeQuote = "«Всё будет правильно. На этом построен мир» — М.А. Булгаков";
+                prizeIcon = "📖";
+            } else {
+                prizeQuote = "«А звёзды останутся...» Перечитай роман и попробуй снова!";
+                prizeIcon = "🔄";
+            }
+            
+            gameContent.innerHTML = `
+                <div class="final-screen">
+                    <div class="final-icon">${prizeIcon}</div>
+                    <h2>Киев пройден!</h2>
+                    <div class="final-score">${score} / ${totalPossible} баллов</div>
+                    <div class="prize">
+                        <strong>📜 Литературный приз:</strong><br>
+                        "${prizeQuote}"
+                    </div>
+                    <a href="index.html" class="reset-btn">Выбрать другого писателя →</a>
+                </div>
+            `;
+        }
+        
+        function showQuestion() {
+            if (currentQuestion >= questions.length) {
+                showFinalScreen();
+                return;
+            }
+            
+            const q = questions[currentQuestion];
+            
+            gameContent.innerHTML = `
+                <div class="location">
+                    <div class="location-icon">🏙️</div>
+                    <h3>${q.location}</h3>
+                </div>
+                <div class="question-card">
+                    <div class="question-text">${q.question}</div>
+                    <div class="options" id="options">
+                        ${q.options.map((opt, idx) => `<div class="option" data-index="${idx}">${opt}</div>`).join('')}
+                    </div>
+                    <button class="next-btn" id="nextBtn" disabled>Далее →</button>
+                    <div id="feedback" class="feedback"></div>
+                </div>
+            `;
+            
+            answerLocked = false;
+            
+            const options = document.querySelectorAll('.option');
+            const nextBtn = document.getElementById('nextBtn');
+            const feedbackDiv = document.getElementById('feedback');
+            
+            options.forEach(opt => {
+                opt.addEventListener('click', () => {
+                    if (answerLocked) return;
+                    
+                    const selectedIdx = parseInt(opt.dataset.index);
+                    const isCorrect = (selectedIdx === q.correct);
+                    
+                    if (isCorrect) {
+                        score += 10;
+                        scoreElement.textContent = score;
+                        opt.classList.add('correct');
+                        feedbackDiv.innerHTML = `✅ Правильно! ${q.explanation}`;
+                        feedbackDiv.className = 'feedback correct-feedback';
+                    } else {
+                        opt.classList.add('wrong');
+                        const correctText = q.options[q.correct];
+                        feedbackDiv.innerHTML = `❌ Неправильно. Правильный ответ: «${correctText}». ${q.explanation}`;
+                        feedbackDiv.className = 'feedback wrong-feedback';
+                        
+                        options[q.correct].classList.add('correct');
+                    }
+                    
+                    answerLocked = true;
+                    options.forEach(o => o.classList.add('disabled'));
+                    nextBtn.disabled = false;
+                });
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                currentQuestion++;
+                updateProgress();
+                showQuestion();
+            });
+        }
+        
+        updateProgress();
+        showQuestion();
+    </script>
+</body>
+</html>

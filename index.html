@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Литературные миры</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body
+    <div class="container">
+        <h1 class="main-title">📚 Литературные миры</h1>
+        <p class="subtitle">Интерактивная игра-бродилка по произведениям русской литературы</p>
+        <p class="subtitle-small">Выбери писателя и пройди путь героя</p>
+        
+        <div class="worlds-grid">
+            <!-- Лермонтов -->
+            <div class="world-card" data-world="lermontov">
+                <div class="world-icon">
+                    🏔️
+                </div>
+                <h2>М.Ю. Лермонтов</h2>
+                <p class="world-desc">«Герой нашего времени» • Кавказ • Дуэль</p>
+                <div class="world-badge">★ 5 испытаний ★</div>
+                <button class="play-btn" onclick="startGame('lermontov')">Начать путь →</button>
+            </div>
+            
+            <!-- Толстой -->
+            <div class="world-card" data-world="tolstoy">
+                <div class="world-icon">
+                    ⚔️
+                </div>
+                <h2>Л.Н. Толстой</h2>
+                <p class="world-desc">«Война и мир» • Бородино • Судьба России</p>
+                <div class="world-badge">★ 5 испытаний ★</div>
+                <button class="play-btn" onclick="startGame('tolstoy')">Начать путь →</button>
+            </div>
+            
+            <!-- Булгаков -->
+            <div class="world-card" data-world="bulgakov">
+                <div class="world-icon">
+                    🏙️
+                </div>
+                <h2>М.А. Булгаков</h2>
+                <p class="world-desc">«Белая гвардия» • Киев 1918 • Дом Турбиных</p>
+                <div class="world-badge">★ 5 испытаний ★</div>
+                <button class="play-btn" onclick="startGame('bulgakov')">Начать путь →</button>
+            </div>
+        </div>
+        
+        <div class="info-footer">
+            <p>🎯 Как играть: выбери писателя → отвечай на вопросы → получай баллы → забери литературный приз!</p>
+            <p>📖 Всего вопросов: 15 | Максимум баллов: 150</p>
+        </div>
+    </div>
+    
+    <script>
+        function startGame(world) {
+            window.location.href = world + '.html';
+        }
+    </script>
+</body>
+</html>

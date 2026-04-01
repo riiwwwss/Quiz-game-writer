@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лермонтов - Кавказские горы</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #3a5e3a 0%, #2c4a2c 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <a href="index.html" class="back-btn">← Вернуться</a>
+            <div class="score">📖 Баллы: <span id="score">0</span></div>
+        </div>
+        
+        <div class="progress">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Препятствие 1 из 5</div>
+        </div>
+        
+        <div class="location">
+            <div class="location-icon">🏔️</div>
+            <h3 id="locationTitle">Кавказские горы</h3>
+        </div>
+        
+        <div id="gameContent"></div>
+    </div>
+    
+    <script>
+        const questions = [
+            {
+                location: "Дуэль с Грушницким",
+                question: "Почему состоялась дуэль Печорина с Грушницким?",
+                options: [
+                    "Из-за княжны Мери",
+                    "Из-за карточного долга",
+                    "Из-за военной службы"
+                ],
+                correct: 0,
+                explanation: "Печорин и Грушницкий поссорились из-за княжны Мери. Грушницкий распускал слухи, и дуэль стала неизбежной."
+            },
+            {
+                location: "Тамань",
+                question: "Что происходит с Печориным в Тамани?",
+                options: [
+                    "Он встречает старую любовь",
+                    "Он попадает в историю с контрабандистами",
+                    "Он выигрывает дуэль"
+                ],
+                correct: 1,
+                explanation: "В Тамани Печорин сталкивается с контрабандистами, которые чуть не топят его в море."
+            },
+            {
+                location: "Вера",
+                question: "Кто такая Вера в романе «Герой нашего времени»?",
+                options: [
+                    "Сестра Печорина",
+                    "Единственная женщина, которую Печорин действительно любил",
+                    "Княжна, в которую влюблен Грушницкий"
+                ],
+                correct: 1,
+                explanation: "Вера — замужняя женщина, которую Печорин любил по-настоящему. Она единственная, кто понимает его."
+            },
+            {
+                location: "Характер Печорина",
+                question: "Как сам Печорин объясняет свою способность приносить несчастья другим?",
+                options: [
+                    "Он считает это проклятием",
+                    "Он говорит, что это его судьба",
+                    "Он считает, что просто играет роль"
+                ],
+                correct: 1,
+                explanation: "Печорин говорит: «Я чувствую в себе эту необъятную силу, но не знаю, на что ее употребить». Он считает себя орудием судьбы."
+            },
+            {
+                location: "Финал",
+                question: "Чем заканчивается роман «Герой нашего времени»?",
+                options: [
+                    "Печорин женится на княжне Мери",
+                    "Печорин погибает в Персии",
+                    "Печорин становится генералом"
+                ],
+                correct: 1,
+                explanation: "Из предисловия к роману мы узнаем, что Печорин умер по дороге из Персии."
+            }
+        ];
+        
+        let currentQuestion = 0;
+        let score = 0;
+        let answerLocked = false;
+        
+        const scoreElement = document.getElementById('score');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const gameContent = document.getElementById('gameContent');
+        
+        function updateProgress() {
+            const percent = (currentQuestion / questions.length) * 100;
+            progressFill.style.width = percent + '%';
+            progressText.textContent = `Препятствие ${currentQuestion + 1} из ${questions.length}`;
+            scoreElement.textContent = score;
+        }
+        
+        function showFinalScreen() {
+            const totalPossible = questions.length * 10;
+            const percent = (score / totalPossible) * 100;
+            let prizeQuote = "";
+            let prizeIcon = "";
+            
+            if (percent >= 80) {
+                prizeQuote = "«А что такое счастье?.. Гордость?.. Я несчастлив, потому что во мне нет этой гордости...» — М.Ю. Лермонтов";
+                prizeIcon = "🏆";
+            } else if (percent >= 50) {
+                prizeQuote = "«Судьба как-то всегда приводила меня к развязке чужих драм...» — М.Ю. Лермонтов";
+                prizeIcon = "📖";
+            } else {
+                prizeQuote = "«Скучно мне, потому что я не знаю, зачем живу...» Перечитай роман и попробуй снова!";
+                prizeIcon = "🔄";
+            }
+            
+            gameContent.innerHTML = `
+                <div class="final-screen">
+                    <div class="final-icon">${prizeIcon}</div>
+                    <h2>Путь завершён!</h2>
+                    <div class="final-score">${score} / ${totalPossible} баллов</div>
+                    <div class="prize">
+                        <strong>📜 Литературный приз:</strong><br>
+                        "${prizeQuote}"
+                    </div>
+                    <a href="index.html" class="reset-btn">Выбрать другого писателя →</a>
+                </div>
+            `;
+        }
+        
+        function showQuestion() {
+            if (currentQuestion >= questions.length) {
+                showFinalScreen();
+                return;
+            }
+            
+            const q = questions[currentQuestion];
+            
+            gameContent.innerHTML = `
+                <div class="location">
+                    <div class="location-icon">🏔️</div>
+                    <h3>${q.location}</h3>
+                </div>
+                <div class="question-card">
+                    <div class="question-text">${q.question}</div>
+                    <div class="options" id="options">
+                        ${q.options.map((opt, idx) => `<div class="option" data-index="${idx}">${opt}</div>`).join('')}
+                    </div>
+                    <button class="next-btn" id="nextBtn" disabled>Далее →</button>
+                    <div id="feedback" class="feedback"></div>
+                </div>
+            `;
+            
+            answerLocked = false;
+            
+            const options = document.querySelectorAll('.option');
+            const nextBtn = document.getElementById('nextBtn');
+            const feedbackDiv = document.getElementById('feedback');
+            
+            options.forEach(opt => {
+                opt.addEventListener('click', () => {
+                    if (answerLocked) return;
+                    
+                    const selectedIdx = parseInt(opt.dataset.index);
+                    const isCorrect = (selectedIdx === q.correct);
+                    
+                    if (isCorrect) {
+                        score += 10;
+                        scoreElement.textContent = score;
+                        opt.classList.add('correct');
+                        feedbackDiv.innerHTML = `✅ Правильно! ${q.explanation}`;
+                        feedbackDiv.className = 'feedback correct-feedback';
+                    } else {
+                        opt.classList.add('wrong');
+                        const correctText = q.options[q.correct];
+                        feedbackDiv.innerHTML = `❌ Неправильно. Правильный ответ: «${correctText}». ${q.explanation}`;
+                        feedbackDiv.className = 'feedback wrong-feedback';
+                        
+                        options[q.correct].classList.add('correct');
+                    }
+                    
+                    answerLocked = true;
+                    options.forEach(o => o.classList.add('disabled'));
+                    nextBtn.disabled = false;
+                });
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                currentQuestion++;
+                updateProgress();
+                showQuestion();
+            });
+        }
+        
+        updateProgress();
+        showQuestion();
+    </script>
+</body>
+</html>

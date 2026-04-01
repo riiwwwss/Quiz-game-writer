@@ -13,7 +13,6 @@ body {
     overflow-x: hidden;
 }
 
-/* Анимированный фон */
 body::before {
     content: '';
     position: fixed;
@@ -391,7 +390,6 @@ body::before {
     margin-top: 5px;
 }
 
-/* Карточка вопроса */
 .question-card {
     background: #fff;
     border-radius: 24px;
@@ -481,30 +479,6 @@ body::before {
     opacity: 0.7;
 }
 
-.next-btn {
-    background: linear-gradient(135deg, #2c5530, #1e3c2c);
-    color: white;
-    border: none;
-    padding: 14px 30px;
-    font-size: 18px;
-    border-radius: 40px;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 20px;
-    transition: all 0.3s;
-    font-weight: bold;
-}
-
-.next-btn:hover:not(:disabled) {
-    transform: scale(1.02);
-    box-shadow: 0 5px 15px rgba(44,85,48,0.3);
-}
-
-.next-btn:disabled {
-    background: #b0a88c;
-    cursor: not-allowed;
-}
-
 .feedback {
     margin-top: 20px;
     padding: 12px;
@@ -531,7 +505,6 @@ body::before {
     border-left: 4px solid #dc3545;
 }
 
-/* Финальный экран */
 .final-screen {
     text-align: center;
     padding: 40px;
@@ -595,12 +568,6 @@ body::before {
 .reset-btn:hover {
     background: #5a3a1a;
     transform: scale(1.05);
-}
-
-.lives {
-    display: flex;
-    gap: 5px;
-    align-items: center;
 }
 
 @media (max-width: 768px) {

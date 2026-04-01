@@ -17,7 +17,7 @@
         
         <div class="worlds-grid">
             <!-- Лермонтов -->
-            <div class="world-card" data-world="lermontov" onmouseover="playHoverSound()">
+            <div class="world-card" data-world="lermontov">
                 <div class="world-icon">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Lermontov_picture.jpg/200px-Lermontov_picture.jpg" 
                          alt="Лермонтов" 
@@ -28,13 +28,13 @@
                 <div class="world-stats">
                     <span>📖 10 вопросов</span>
                     <span>⏱️ 10 сек</span>
-                    <span>🏆 3 жизни</span>
+                    <span>❤️ 3 жизни</span>
                 </div>
                 <button class="play-btn" onclick="startGame('lermontov')">Начать квест →</button>
             </div>
             
             <!-- Толстой -->
-            <div class="world-card" data-world="tolstoy" onmouseover="playHoverSound()">
+            <div class="world-card" data-world="tolstoy">
                 <div class="world-icon">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/LNTolstoy.jpg/200px-LNTolstoy.jpg" 
                          alt="Толстой" 
@@ -45,13 +45,13 @@
                 <div class="world-stats">
                     <span>📖 10 вопросов</span>
                     <span>⏱️ 10 сек</span>
-                    <span>🏆 3 жизни</span>
+                    <span>❤️ 3 жизни</span>
                 </div>
                 <button class="play-btn" onclick="startGame('tolstoy')">Начать квест →</button>
             </div>
             
             <!-- Булгаков -->
-            <div class="world-card" data-world="bulgakov" onmouseover="playHoverSound()">
+            <div class="world-card" data-world="bulgakov">
                 <div class="world-icon">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Bulgakov_%28cropped%29.jpg/200px-Bulgakov_%28cropped%29.jpg" 
                          alt="Булгаков" 
@@ -62,43 +62,20 @@
                 <div class="world-stats">
                     <span>📖 10 вопросов</span>
                     <span>⏱️ 10 сек</span>
-                    <span>🏆 3 жизни</span>
+                    <span>❤️ 3 жизни</span>
                 </div>
                 <button class="play-btn" onclick="startGame('bulgakov')">Начать квест →</button>
             </div>
         </div>
         
         <div class="info-footer">
-            <p>🎮 Как играть: отвечай на вопросы за 10 секунд | ❤️ 3 жизни | ⭐ Баллы за скорость</p>
+            <p>🎮 Как играть: отвечай на вопросы за 10 секунд | ❤️ 3 жизни | ⭐ Баллы + бонус за скорость</p>
             <p>📖 30 уникальных вопросов по программе 10-11 класса</p>
+            <p>🏆 За правильный ответ +10 баллов + бонус за оставшиеся секунды</p>
         </div>
     </div>
     
-    <audio id="hoverSound" preload="auto">
-        <source src="data:audio/wav;base64,U3RlcmVv" type="audio/wav">
-    </audio>
-    
     <script>
-        function playHoverSound() {
-            // Звук при наведении (имитация)
-            const audio = new Audio();
-            audio.volume = 0.2;
-            // Простой beep через Web Audio API
-            try {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                const ctx = new AudioContext();
-                const oscillator = ctx.createOscillator();
-                const gain = ctx.createGain();
-                oscillator.connect(gain);
-                gain.connect(ctx.destination);
-                oscillator.frequency.value = 880;
-                gain.gain.value = 0.1;
-                oscillator.start();
-                gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.2);
-                oscillator.stop(ctx.currentTime + 0.2);
-            } catch(e) {}
-        }
-        
         function startGame(world) {
             localStorage.setItem('currentWorld', world);
             window.location.href = 'game.html';

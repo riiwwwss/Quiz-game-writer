@@ -218,14 +218,8 @@ body::before {
 }
 
 @keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .game-header {
@@ -276,9 +270,9 @@ body::before {
 .stat span:last-child {
     color: #2c5530;
     font-size: 20px;
+    font-weight: bold;
 }
 
-/* Прогресс-бар */
 .progress-section {
     margin-bottom: 25px;
 }
@@ -323,7 +317,6 @@ body::before {
     font-weight: bold;
 }
 
-/* Таймер */
 .timer-section {
     text-align: center;
     margin-bottom: 25px;
@@ -346,8 +339,6 @@ body::before {
 
 .timer-progress {
     stroke: #f7d44a;
-    stroke-dasharray: 251.2;
-    stroke-dashoffset: 0;
     transition: stroke-dashoffset 0.1s linear;
 }
 
@@ -370,7 +361,6 @@ body::before {
     50% { color: #e76f51; text-shadow: 0 0 5px red; }
 }
 
-/* Локация */
 .location {
     text-align: center;
     margin-bottom: 25px;
@@ -390,9 +380,15 @@ body::before {
 }
 
 .location h3 {
-    font-size: 24px;
+    font-size: 28px;
     color: #2c5530;
     margin-top: 10px;
+}
+
+.location-desc {
+    font-size: 14px;
+    color: #5a4a2e;
+    margin-top: 5px;
 }
 
 /* Карточка вопроса */
@@ -406,14 +402,19 @@ body::before {
 }
 
 @keyframes cardAppear {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.question-book {
+    display: inline-block;
+    background: #f7d44a;
+    color: #2c5530;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 15px;
 }
 
 .question-text {
@@ -425,16 +426,6 @@ body::before {
     background: #f9f5e8;
     padding: 20px;
     border-radius: 16px;
-}
-
-.question-book {
-    display: inline-block;
-    background: #f7d44a;
-    color: #2c5530;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    margin-bottom: 10px;
 }
 
 .options {
@@ -450,8 +441,7 @@ body::before {
     cursor: pointer;
     transition: all 0.2s;
     border: 2px solid transparent;
-    position: relative;
-    overflow: hidden;
+    font-size: 16px;
 }
 
 .option:hover:not(.disabled) {
@@ -549,14 +539,8 @@ body::before {
 }
 
 @keyframes zoomIn {
-    from {
-        opacity: 0;
-        transform: scale(0.8);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 .final-icon {
@@ -617,16 +601,6 @@ body::before {
     display: flex;
     gap: 5px;
     align-items: center;
-}
-
-.life {
-    font-size: 20px;
-    transition: all 0.3s;
-}
-
-.life.lost {
-    opacity: 0.3;
-    filter: grayscale(1);
 }
 
 @media (max-width: 768px) {

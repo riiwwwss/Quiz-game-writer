@@ -2,11 +2,11 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Литературный квест</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body id="gameBody">
     <div class="game-container">
         <div class="game-header">
             <a href="index.html" class="back-btn">← Главное меню</a>
@@ -44,32 +44,24 @@
         </div>
         
         <div class="location" id="location">
-            <div class="location-icon" id="locationIcon">🏔️</div>
+            <div class="location-icon" id="locationIcon">📖</div>
             <h3 id="locationTitle">Загрузка...</h3>
+            <p class="location-desc" id="locationDesc"></p>
         </div>
         
         <div id="gameContent"></div>
     </div>
     
-    <audio id="correctSound" preload="auto">
-        <source src="data:audio/wav;base64,U3RlcmVv" type="audio/wav">
-    </audio>
-    <audio id="wrongSound" preload="auto">
-        <source src="data:audio/wav;base64,U3RlcmVv" type="audio/wav">
-    </audio>
-    <audio id="timeoutSound" preload="auto">
-        <source src="data:audio/wav;base64,U3RlcmVv" type="audio/wav">
-    </audio>
-    
     <script>
-        // ========== ДАННЫЕ ПО ПИСАТЕЛЯМ (10 вопросов на каждого) ==========
+        // ========== ДАННЫЕ ПО ПИСАТЕЛЯМ (10 ВОПРОСОВ НА КАЖДОГО) ==========
         const worldsData = {
             lermontov: {
                 name: "М.Ю. Лермонтов",
                 icon: "🏔️",
+                desc: "«Герой нашего времени» • Кавказ • Дуэль",
                 bgGradient: "linear-gradient(135deg, #3a5e3a 0%, #2c4a2c 100%)",
                 questions: [
-                    { book: "Герой нашего времени", text: "Как зовут главного героя романа «Герой нашего времени»?", options: ["Евгений Онегин", "Григорий Печорин", "Александр Чацкий", "Дмитрий Рудин"], correct: 1, explanation: "Печорин Григорий Александрович — главный герой романа." },
+                    { book: "Герой нашего времени", text: "Как зовут главного героя романа «Герой нашего времени»?", options: ["Евгений Онегин", "Григорий Печорин", "Александр Чацкий", "Дмитрий Рудин"], correct: 1, explanation: "Печорин Григорий Александрович — главный герой романа, «лишний человек»." },
                     { book: "Герой нашего времени", text: "С кем Печорин стреляется на дуэли?", options: ["С Максимом Максимычем", "С Грушницким", "С Вернером", "С княжной Мери"], correct: 1, explanation: "Дуэль была с Грушницким из-за княжны Мери." },
                     { book: "Герой нашего времени", text: "Как зовут девушку, которую Печорин похищает?", options: ["Княжна Мери", "Вера", "Бэла", "Ундина"], correct: 2, explanation: "Бэла — черкешенка, которую Печорин похищает." },
                     { book: "Герой нашего времени", text: "В какой главе романа происходит история с контрабандистами?", options: ["Бэла", "Максим Максимыч", "Тамань", "Княжна Мери"], correct: 2, explanation: "В главе «Тамань» Печорин сталкивается с контрабандистами." },
@@ -84,23 +76,25 @@
             tolstoy: {
                 name: "Л.Н. Толстой",
                 icon: "⚔️",
+                desc: "«Война и мир» • Бородино • Судьба России",
                 bgGradient: "linear-gradient(135deg, #5d3a1a 0%, #8b5a2b 100%)",
                 questions: [
-                    { book: "Война и мир", text: "Сколько томов в романе «Война и мир»?", options: ["3", "4", "5", "6"], correct: 1, explanation: "Роман состоит из 4 томов." },
-                    { book: "Война и мир", text: "Кто командует русской армией при Бородино?", options: ["Наполеон", "Кутузов", "Багратион", "Барклай-де-Толли"], correct: 1, explanation: "Кутузов — главнокомандующий русской армией." },
-                    { book: "Война и мир", text: "За кого выходит замуж Наташа Ростова?", options: ["Андрей Болконский", "Пьер Безухов", "Анатоль Курагин", "Николай Ростов"], correct: 1, explanation: "В конце романа Наташа выходит замуж за Пьера Безухова." },
-                    { book: "Война и мир", text: "Что происходит с Андреем Болконским?", options: ["Женится на Наташе", "Умирает от ранения", "Эмигрирует", "Становится декабристом"], correct: 1, explanation: "Андрей Болконский умирает от ранения после Бородинского сражения." },
-                    { book: "Война и мир", text: "Какую фамилию носит семья Наташи?", options: ["Болконские", "Курагины", "Ростовы", "Безуховы"], correct: 2, explanation: "Наташа — Ростова, дочь графа Ильи Андреевича Ростова." },
-                    { book: "Война и мир", text: "Кто из героев романа предлагает отдать подводы для раненых?", options: ["Андрей Болконский", "Пьер Безухов", "Наташа Ростова", "Кутузов"], correct: 2, explanation: "Наташа уговаривает родителей отдать подводы для раненых." },
-                    { book: "Война и мир", text: "Какое сражение описывается в 3 томе романа?", options: ["Аустерлиц", "Шенграбен", "Бородино", "Тарутино"], correct: 2, explanation: "Бородинское сражение — центральное событие 3 тома." },
-                    { book: "Война и мир", text: "Кто такой Платон Каратаев для Пьера?", options: ["Враг", "Учитель мудрости", "Сослуживец", "Родственник"], correct: 1, explanation: "Платон Каратаев становится для Пьера символом народной мудрости." },
-                    { book: "Война и мир", text: "Что символизирует дуб в романе?", options: ["Смерть", "Жизнь и возрождение", "Старость", "Войну"], correct: 1, explanation: "Дуб символизирует внутреннее возрождение князя Андрея." },
-                    { book: "Война и мир", text: "Какова главная мысль романа «Война и мир»?", options: ["Героизм личности", "Роль народа в истории", "Любовная линия", "Критика монархии"], correct: 1, explanation: "Толстой утверждает, что историей движут народные массы." }
+                    { book: "Война и мир", text: "Сколько томов в романе «Война и мир»?", options: ["3 тома", "4 тома", "5 томов", "6 томов"], correct: 1, explanation: "Роман-эпопея «Война и мир» состоит из 4 томов." },
+                    { book: "Война и мир", text: "Кто командует русской армией во время Бородинского сражения?", options: ["Наполеон Бонапарт", "Михаил Кутузов", "Пётр Багратион", "Михаил Барклай-де-Толли"], correct: 1, explanation: "Михаил Илларионович Кутузов был главнокомандующим." },
+                    { book: "Война и мир", text: "За кого в конце романа выходит замуж Наташа Ростова?", options: ["Андрей Болконский", "Пьер Безухов", "Анатоль Курагин", "Николай Ростов"], correct: 1, explanation: "Наташа выходит замуж за Пьера Безухова." },
+                    { book: "Война и мир", text: "Что происходит с князем Андреем Болконским после Бородинского сражения?", options: ["Женится на Наташе", "Умирает от ранения", "Эмигрирует", "Становится декабристом"], correct: 1, explanation: "Князь Андрей получает смертельное ранение и умирает." },
+                    { book: "Война и мир", text: "Какую фамилию носит семья Наташи Ростовой?", options: ["Болконские", "Курагины", "Ростовы", "Безуховы"], correct: 2, explanation: "Наташа — дочь графа Ильи Андреевича Ростова." },
+                    { book: "Война и мир", text: "Кто из героев предлагает отдать подводы для перевозки раненых?", options: ["Андрей Болконский", "Пьер Безухов", "Наташа Ростова", "Кутузов"], correct: 2, explanation: "Наташа уговаривает родителей отдать подводы для раненых." },
+                    { book: "Война и мир", text: "Какое сражение является кульминацией романа?", options: ["Аустерлиц", "Шенграбен", "Бородино", "Тарутино"], correct: 2, explanation: "Бородинское сражение — центральное событие романа." },
+                    { book: "Война и мир", text: "Кто такой Платон Каратаев для Пьера Безухова?", options: ["Враг", "Учитель мудрости", "Сослуживец", "Родственник"], correct: 1, explanation: "Платон Каратаев — символ народной мудрости." },
+                    { book: "Война и мир", text: "Что символизирует старый дуб в романе?", options: ["Смерть", "Жизнь и возрождение", "Старость", "Войну"], correct: 1, explanation: "Дуб символизирует возрождение князя Андрея." },
+                    { book: "Война и мир", text: "Какова главная мысль романа по мнению Толстого?", options: ["Героизм личности", "Роль народа в истории", "Любовная линия", "Критика монархии"], correct: 1, explanation: "Толстой утверждает, что историей движут народные массы." }
                 ]
             },
             bulgakov: {
                 name: "М.А. Булгаков",
                 icon: "🏙️",
+                desc: "«Белая гвардия» • Киев 1918 • Дом Турбиных",
                 bgGradient: "linear-gradient(135deg, #2c2c3a 0%, #1a1a2a 100%)",
                 questions: [
                     { book: "Белая гвардия", text: "Как называется дом семьи Турбиных?", options: ["Дом на набережной", "Дом Турбиных", "Дом на Алексеевском спуске", "Дворянское гнездо"], correct: 2, explanation: "Дом находится на Алексеевском спуске, 13." },
@@ -121,10 +115,11 @@
         const world = localStorage.getItem('currentWorld') || 'lermontov';
         const worldData = worldsData[world];
         
-        // Устанавливаем фон
-        document.body.style.background = worldData.bgGradient;
+        // Устанавливаем фон и оформление
+        document.getElementById('gameBody').style.background = worldData.bgGradient;
         document.getElementById('locationIcon').textContent = worldData.icon;
         document.getElementById('locationTitle').textContent = worldData.name;
+        document.getElementById('locationDesc').textContent = worldData.desc;
         
         // Игровые переменные
         let currentQuestion = 0;
@@ -145,7 +140,21 @@
         const timerText = document.getElementById('timerText');
         const timerProgress = document.querySelector('.timer-progress');
         
-        // Звуковые функции
+        const circumference = 2 * Math.PI * 40;
+        
+        function updateUI() {
+            scoreElement.textContent = score;
+            livesElement.textContent = lives;
+            questionCountElement.textContent = `${currentQuestion}/${totalQuestions}`;
+            const percent = (currentQuestion / totalQuestions) * 100;
+            progressFill.style.width = percent + '%';
+            progressText.textContent = `Испытание ${currentQuestion + 1} из ${totalQuestions}`;
+            
+            if (lives === 2) livesElement.style.color = "#f7d44a";
+            else if (lives === 1) livesElement.style.color = "#e76f51";
+            else livesElement.style.color = "#2c5530";
+        }
+        
         function playSound(type) {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -157,36 +166,25 @@
                 
                 if (type === 'correct') {
                     oscillator.frequency.value = 880;
-                    gain.gain.value = 0.2;
+                    gain.gain.value = 0.15;
                     oscillator.start();
                     gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3);
                     oscillator.stop(ctx.currentTime + 0.3);
                 } else if (type === 'wrong') {
                     oscillator.frequency.value = 440;
-                    gain.gain.value = 0.2;
+                    gain.gain.value = 0.15;
                     oscillator.start();
                     gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.4);
                     oscillator.stop(ctx.currentTime + 0.4);
                 } else if (type === 'timeout') {
                     oscillator.frequency.value = 220;
-                    gain.gain.value = 0.3;
+                    gain.gain.value = 0.2;
                     oscillator.start();
-                    setTimeout(() => {
-                        oscillator.frequency.value = 110;
-                    }, 200);
+                    setTimeout(() => { oscillator.frequency.value = 110; }, 200);
                     gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.8);
                     oscillator.stop(ctx.currentTime + 0.8);
                 }
             } catch(e) {}
-        }
-        
-        function updateUI() {
-            scoreElement.textContent = score;
-            livesElement.textContent = lives;
-            questionCountElement.textContent = `${currentQuestion}/${totalQuestions}`;
-            const percent = (currentQuestion / totalQuestions) * 100;
-            progressFill.style.width = percent + '%';
-            progressText.textContent = `Испытание ${currentQuestion + 1} из ${totalQuestions}`;
         }
         
         function stopTimer() {
@@ -200,18 +198,16 @@
             stopTimer();
             timeLeft = 10;
             timerText.textContent = timeLeft;
-            const circumference = 2 * Math.PI * 40;
-            const dashArray = circumference;
-            timerProgress.style.strokeDasharray = dashArray;
+            timerProgress.style.strokeDasharray = circumference;
+            timerProgress.style.strokeDashoffset = 0;
             
             timerInterval = setInterval(() => {
                 if (answerLocked) return;
                 
                 timeLeft--;
                 timerText.textContent = timeLeft;
-                
                 const offset = (timeLeft / 10) * circumference;
-                timerProgress.style.strokeDashoffset = dashArray - offset;
+                timerProgress.style.strokeDashoffset = circumference - offset;
                 
                 if (timeLeft <= 3) {
                     timerText.classList.add('timer-warning');
@@ -264,17 +260,25 @@
             `;
         }
         
-        function handleAnswer(isCorrect, explanation, correctAnswer) {
+        function showFeedback(isCorrect, message, explanation) {
+            const feedbackDiv = document.getElementById('feedback');
+            if (feedbackDiv) {
+                feedbackDiv.innerHTML = `${message}<br><small>${explanation}</small>`;
+                feedbackDiv.className = `feedback ${isCorrect ? 'correct-feedback' : 'wrong-feedback'}`;
+            }
+        }
+        
+        function handleAnswer(isCorrect, explanation, correctAnswer, timeLeftAtAnswer) {
             if (answerLocked) return;
             answerLocked = true;
             stopTimer();
             
             if (isCorrect) {
-                const timeBonus = Math.floor(timeLeft * 0.5);
+                const timeBonus = Math.floor(timeLeftAtAnswer * 0.5);
                 const points = 10 + timeBonus;
                 score += points;
                 playSound('correct');
-                showFeedback(true, `✅ Правильно! +${points} баллов (бонус за скорость)`, explanation);
+                showFeedback(true, `✅ Правильно! +${points} баллов (бонус за скорость: +${timeBonus})`, explanation);
             } else {
                 lives--;
                 playSound('wrong');
@@ -307,14 +311,6 @@
                     showQuestion();
                 }
             }, 2000);
-        }
-        
-        function showFeedback(isCorrect, message, explanation) {
-            const feedbackDiv = document.getElementById('feedback');
-            if (feedbackDiv) {
-                feedbackDiv.innerHTML = `${message}<br><small>${explanation}</small>`;
-                feedbackDiv.className = `feedback ${isCorrect ? 'correct-feedback' : 'wrong-feedback'}`;
-            }
         }
         
         function showQuestion() {
@@ -352,7 +348,7 @@
                         options[q.correct].classList.add('correct');
                     }
                     
-                    handleAnswer(isCorrect, q.explanation, correctAnswer);
+                    handleAnswer(isCorrect, q.explanation, correctAnswer, timeLeft);
                 });
             });
             

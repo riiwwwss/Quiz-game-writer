@@ -13,13 +13,13 @@
             <div class="stats-panel">
                 <div class="stat"><span>⭐</span><span id="score">0</span></div>
                 <div class="stat"><span>❤️</span><span id="lives">3</span></div>
-                <div class="stat"><span>📊</span><span id="questionCount">0/10</span></div>
+                <div class="stat"><span>🔥</span><span id="combo">0</span></div>
             </div>
         </div>
         
-        <div class="progress-section">
-            <div class="progress-bar-container"><div class="progress-fill" id="progressFill"></div></div>
-            <div class="progress-text" id="progressText">Испытание 1 из 10</div>
+        <!-- Карта глав вместо простого прогресс-бара -->
+        <div class="chapter-map" id="chapterMap">
+            <!-- Динамически заполняется иконками глав -->
         </div>
         
         <div class="timer-section">
@@ -42,7 +42,6 @@
     </div>
     
     <script>
-        // ========== ДАННЫЕ ПО ПИСАТЕЛЯМ (10 ВОПРОСОВ НА КАЖДОГО) ==========
         const worldsData = {
             lermontov: {
                 name: "М.Ю. Лермонтов",
@@ -100,93 +99,102 @@
             }
         };
         
-        // Проверка и получение выбранного мира
         let world = localStorage.getItem('currentWorld');
         if (!world || !worldsData[world]) {
-            // Если мир не выбран или невалидный – возвращаем на главную
             alert('Пожалуйста, выберите писателя в главном меню.');
             window.location.href = 'index.html';
         }
         
         const worldData = worldsData[world];
-        
-        // Устанавливаем фон и оформление
         document.getElementById('gameBody').style.background = worldData.bgGradient;
         document.getElementById('locationIcon').textContent = worldData.icon;
         document.getElementById('locationTitle').textContent = worldData.name;
         document.getElementById('locationDesc').textContent = worldData.desc;
         
-        // Игровые переменные
         let currentQuestion = 0;
         let score = 0;
         let lives = 3;
+        let combo = 0;          // счётчик правильных ответов подряд
         let timeLeft = 10;
         let timerInterval = null;
         let answerLocked = false;
-        
         const totalQuestions = worldData.questions.length;
         
         const scoreElement = document.getElementById('score');
         const livesElement = document.getElementById('lives');
-        const questionCountElement = document.getElementById('questionCount');
-        const progressFill = document.getElementById('progressFill');
-        const progressText = document.getElementById('progressText');
+        const comboElement = document.getElementById('combo');
         const gameContent = document.getElementById('gameContent');
         const timerText = document.getElementById('timerText');
         const timerProgress = document.querySelector('.timer-progress');
-        
         const circumference = 2 * Math.PI * 40;
+        
+        // Создаём карту глав
+        function buildChapterMap() {
+            const mapContainer = document.getElementById('chapterMap');
+            mapContainer.innerHTML = '';
+            for (let i = 0; i < totalQuestions; i++) {
+                const chapter = document.createElement('div');
+                chapter.className = 'chapter-marker';
+                if (i < currentQuestion) chapter.classList.add('completed');
+                else if (i === currentQuestion) chapter.classList.add('active');
+                chapter.textContent = (i + 1).toString();
+                mapContainer.appendChild(chapter);
+            }
+        }
         
         function updateUI() {
             scoreElement.textContent = score;
             livesElement.textContent = lives;
-            questionCountElement.textContent = `${currentQuestion}/${totalQuestions}`;
-            const percent = (currentQuestion / totalQuestions) * 100;
-            progressFill.style.width = percent + '%';
-            progressText.textContent = `Испытание ${currentQuestion + 1} из ${totalQuestions}`;
-            
-            if (lives === 2) livesElement.style.color = "#f7d44a";
-            else if (lives === 1) livesElement.style.color = "#e76f51";
-            else livesElement.style.color = "#2c5530";
+            comboElement.textContent = combo;
+            // Обновляем карту глав
+            const markers = document.querySelectorAll('.chapter-marker');
+            markers.forEach((marker, idx) => {
+                marker.classList.remove('completed', 'active');
+                if (idx < currentQuestion) marker.classList.add('completed');
+                else if (idx === currentQuestion) marker.classList.add('active');
+            });
         }
         
         function playSound(type) {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 const ctx = new AudioContext();
-                const oscillator = ctx.createOscillator();
+                const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
-                oscillator.connect(gain);
+                osc.connect(gain);
                 gain.connect(ctx.destination);
-                
                 if (type === 'correct') {
-                    oscillator.frequency.value = 880;
+                    osc.frequency.value = 880;
                     gain.gain.value = 0.15;
-                    oscillator.start();
+                    osc.start();
                     gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3);
-                    oscillator.stop(ctx.currentTime + 0.3);
+                    osc.stop(ctx.currentTime + 0.3);
                 } else if (type === 'wrong') {
-                    oscillator.frequency.value = 440;
+                    osc.frequency.value = 440;
                     gain.gain.value = 0.15;
-                    oscillator.start();
+                    osc.start();
                     gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.4);
-                    oscillator.stop(ctx.currentTime + 0.4);
-                } else if (type === 'timeout') {
-                    oscillator.frequency.value = 220;
+                    osc.stop(ctx.currentTime + 0.4);
+                } else if (type === 'bonus') {
+                    osc.frequency.value = 1046.5;
                     gain.gain.value = 0.2;
-                    oscillator.start();
-                    setTimeout(() => { oscillator.frequency.value = 110; }, 200);
+                    osc.start();
+                    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.5);
+                    osc.stop(ctx.currentTime + 0.5);
+                } else if (type === 'timeout') {
+                    osc.frequency.value = 220;
+                    gain.gain.value = 0.2;
+                    osc.start();
+                    setTimeout(() => { osc.frequency.value = 110; }, 200);
                     gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.8);
-                    oscillator.stop(ctx.currentTime + 0.8);
+                    osc.stop(ctx.currentTime + 0.8);
                 }
             } catch(e) { console.log("Звук не поддерживается"); }
         }
         
         function stopTimer() {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = null;
         }
         
         function startTimer(onTimeout) {
@@ -196,21 +204,14 @@
             timerProgress.style.strokeDasharray = circumference;
             timerProgress.style.strokeDashoffset = 0;
             timerText.classList.remove('timer-warning');
-            
             timerInterval = setInterval(() => {
                 if (answerLocked) return;
-                
                 timeLeft--;
                 timerText.textContent = timeLeft;
                 const offset = (timeLeft / 10) * circumference;
                 timerProgress.style.strokeDashoffset = circumference - offset;
-                
-                if (timeLeft <= 3) {
-                    timerText.classList.add('timer-warning');
-                } else {
-                    timerText.classList.remove('timer-warning');
-                }
-                
+                if (timeLeft <= 3) timerText.classList.add('timer-warning');
+                else timerText.classList.remove('timer-warning');
                 if (timeLeft <= 0) {
                     stopTimer();
                     playSound('timeout');
@@ -219,12 +220,15 @@
             }, 1000);
         }
         
+        function shakeElement(el) {
+            el.style.animation = 'shake 0.3s ease';
+            setTimeout(() => { el.style.animation = ''; }, 300);
+        }
+        
         function showFinalScreen() {
             const totalPossible = totalQuestions * 10;
             const percent = (score / totalPossible) * 100;
-            let prizeQuote = "";
-            let prizeIcon = "";
-            
+            let prizeQuote = "", prizeIcon = "";
             if (percent >= 80) {
                 if (world === 'lermontov') prizeQuote = "«А что такое счастье?..» — М.Ю. Лермонтов";
                 else if (world === 'tolstoy') prizeQuote = "«Всё, что я знаю, я знаю благодаря любви» — Л.Н. Толстой";
@@ -241,16 +245,12 @@
                 else prizeQuote = "«А звёзды останутся...» Перечитай роман!";
                 prizeIcon = "🔄";
             }
-            
             gameContent.innerHTML = `
                 <div class="final-screen">
                     <div class="final-icon">${prizeIcon}</div>
                     <h2>${worldData.name} пройден!</h2>
                     <div class="final-score">${score} / ${totalPossible} баллов</div>
-                    <div class="prize">
-                        <strong>📜 Литературный приз:</strong><br>
-                        "${prizeQuote}"
-                    </div>
+                    <div class="prize"><strong>📜 Литературный приз:</strong><br>"${prizeQuote}"</div>
                     <a href="index.html" class="reset-btn">Выбрать другого писателя →</a>
                 </div>
             `;
@@ -271,47 +271,45 @@
             
             if (isCorrect) {
                 const timeBonus = Math.floor(timeLeftAtAnswer * 0.5);
-                const points = 10 + timeBonus;
+                let points = 10 + timeBonus;
+                // Комбо: каждые 3 правильных ответа подряд даём +5 очков и +1 жизнь
+                combo++;
+                if (combo === 3) {
+                    points += 5;
+                    lives++;
+                    playSound('bonus');
+                    showFeedback(true, `✅ Правильно! +${points} баллов (комбо x3! +5 баллов и +1 жизнь!)`, explanation);
+                    updateUI();
+                } else {
+                    playSound('correct');
+                    showFeedback(true, `✅ Правильно! +${points} баллов (бонус за скорость: +${timeBonus})`, explanation);
+                }
                 score += points;
-                playSound('correct');
-                showFeedback(true, `✅ Правильно! +${points} баллов (бонус за скорость: +${timeBonus})`, explanation);
+                updateUI();
             } else {
                 lives--;
+                combo = 0;
                 playSound('wrong');
                 showFeedback(false, `❌ Неправильно. Правильный ответ: «${correctAnswer}»`, explanation);
                 updateUI();
-                
                 if (lives <= 0) {
-                    gameContent.innerHTML = `
-                        <div class="final-screen">
-                            <div class="final-icon">💀</div>
-                            <h2>Поражение...</h2>
-                            <div class="final-score">${score} баллов</div>
-                            <p>У вас закончились жизни!</p>
-                            <a href="index.html" class="reset-btn">Попробовать снова →</a>
-                        </div>
-                    `;
+                    gameContent.innerHTML = `<div class="final-screen"><div class="final-icon">💀</div><h2>Поражение...</h2><div class="final-score">${score} баллов</div><p>У вас закончились жизни!</p><a href="index.html" class="reset-btn">Попробовать снова →</a></div>`;
                     return;
                 }
+                shakeElement(document.querySelector('.question-card'));
             }
-            
             updateUI();
             
             setTimeout(() => {
                 currentQuestion++;
                 updateUI();
-                
-                if (currentQuestion >= totalQuestions) {
-                    showFinalScreen();
-                } else {
-                    showQuestion();
-                }
+                if (currentQuestion >= totalQuestions) showFinalScreen();
+                else showQuestion();
             }, 2000);
         }
         
         function showQuestion() {
             if (currentQuestion >= totalQuestions) return;
-            
             const q = worldData.questions[currentQuestion];
             answerLocked = false;
             
@@ -327,22 +325,19 @@
             `;
             
             const options = document.querySelectorAll('.option');
-            
             options.forEach(opt => {
                 opt.addEventListener('click', () => {
                     if (answerLocked) return;
-                    
                     const selectedIdx = parseInt(opt.dataset.index);
                     const isCorrect = (selectedIdx === q.correct);
                     const correctAnswer = q.options[q.correct];
-                    
                     if (isCorrect) {
                         opt.classList.add('correct');
                     } else {
                         opt.classList.add('wrong');
                         options[q.correct].classList.add('correct');
+                        shakeElement(opt);
                     }
-                    
                     handleAnswer(isCorrect, q.explanation, correctAnswer, timeLeft);
                 });
             });
@@ -350,38 +345,26 @@
             startTimer(() => {
                 if (!answerLocked) {
                     lives--;
+                    combo = 0;
                     updateUI();
                     playSound('timeout');
                     showFeedback(false, `⏰ Время вышло! Правильный ответ: «${q.options[q.correct]}»`, q.explanation);
                     answerLocked = true;
-                    
                     const optionsDiv = document.querySelectorAll('.option');
                     optionsDiv[q.correct].classList.add('correct');
-                    
                     setTimeout(() => {
                         currentQuestion++;
                         updateUI();
-                        
                         if (lives <= 0) {
-                            gameContent.innerHTML = `
-                                <div class="final-screen">
-                                    <div class="final-icon">💀</div>
-                                    <h2>Поражение...</h2>
-                                    <div class="final-score">${score} баллов</div>
-                                    <p>Время вышло, жизни кончились!</p>
-                                    <a href="index.html" class="reset-btn">Попробовать снова →</a>
-                                </div>
-                            `;
-                        } else if (currentQuestion >= totalQuestions) {
-                            showFinalScreen();
-                        } else {
-                            showQuestion();
-                        }
+                            gameContent.innerHTML = `<div class="final-screen"><div class="final-icon">💀</div><h2>Поражение...</h2><div class="final-score">${score} баллов</div><p>Время вышло, жизни кончились!</p><a href="index.html" class="reset-btn">Попробовать снова →</a></div>`;
+                        } else if (currentQuestion >= totalQuestions) showFinalScreen();
+                        else showQuestion();
                     }, 2000);
                 }
             });
         }
         
+        buildChapterMap();
         updateUI();
         showQuestion();
     </script>

@@ -697,3 +697,73 @@ body::before {
         font-size: 60px;
     }
 }
+/* Дополнительные стили для бродилки */
+.mini-option {
+    background: #f5f0e3;
+    padding: 10px 15px;
+    margin: 8px 0;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.mini-option:hover {
+    background: #f7d44a;
+    transform: translateX(5px);
+}
+.choice-btn {
+    display: block;
+    width: 100%;
+    background: linear-gradient(135deg, #f7d44a, #ffaa33);
+    border: none;
+    padding: 14px;
+    margin: 10px 0;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #2c5530;
+    cursor: pointer;
+    text-align: left;
+    padding-left: 20px;
+    transition: all 0.2s;
+}
+.choice-btn:hover {
+    transform: translateX(8px);
+    background: #ffcc44;
+}
+.adventure-map {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+.map-node {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e0d5b5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    transition: 0.2s;
+}
+.map-node.visited {
+    background: #2c5530;
+    color: white;
+}
+.map-node.current {
+    background: #f7d44a;
+    transform: scale(1.2);
+    box-shadow: 0 0 8px gold;
+}
+.reset-adventure {
+    background: #8b5a2b;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 100%;
+}

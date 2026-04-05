@@ -57,6 +57,7 @@
     </div>
     
     <script>
+        // Функции для перехода
         function startQuiz(author) {
             localStorage.setItem('currentWorld', author);
             localStorage.setItem('gameMode', 'quiz');
@@ -68,19 +69,29 @@
             window.location.href = 'board.html';
         }
         
-        document.querySelectorAll('.world-card').forEach(card => {
-            const author = card.dataset.author;
-            const quizBtn = card.querySelector('.quiz-btn');
-            const boardBtn = card.querySelector('.board-btn');
+        // Назначаем обработчики после полной загрузки DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.world-card').forEach(card => {
+                const author = card.getAttribute('data-author');
+                const quizBtn = card.querySelector('.quiz-btn');
+                const boardBtn = card.querySelector('.board-btn');
+                
+                if (quizBtn) {
+                    quizBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        startQuiz(author);
+                    });
+                }
+                if (boardBtn) {
+                    boardBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        startBoard(author);
+                    });
+                }
+            });
             
-            quizBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                startQuiz(author);
-            });
-            boardBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                startBoard(author);
-            });
+            // Для отладки: выводим сообщение в консоль
+            console.log('Страница загружена, кнопки активны');
         });
     </script>
 </body>

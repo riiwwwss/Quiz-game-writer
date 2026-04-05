@@ -42,8 +42,6 @@
     </div>
     
     <script>
-        console.log("game.html загружен");
-        
         // ========== ДАННЫЕ ПО ПИСАТЕЛЯМ (10 ВОПРОСОВ НА КАЖДОГО) ==========
         const worldsData = {
             lermontov: {
@@ -102,17 +100,15 @@
             }
         };
         
-        // Получаем выбранный мир
-        const world = localStorage.getItem('currentWorld') || 'lermontov';
-        console.log("Выбранный мир:", world);
+        // Проверка и получение выбранного мира
+        let world = localStorage.getItem('currentWorld');
+        if (!world || !worldsData[world]) {
+            // Если мир не выбран или невалидный – возвращаем на главную
+            alert('Пожалуйста, выберите писателя в главном меню.');
+            window.location.href = 'index.html';
+        }
         
         const worldData = worldsData[world];
-        if (!worldData) {
-            console.error("Мир не найден:", world);
-            document.getElementById('gameContent').innerHTML = `<div class="final-screen"><h2>Ошибка!</h2><p>Мир "${world}" не найден</p><a href="index.html" class="reset-btn">Вернуться</a></div>`;
-        } else {
-            console.log("Данные мира загружены:", worldData.name);
-        }
         
         // Устанавливаем фон и оформление
         document.getElementById('gameBody').style.background = worldData.bgGradient;
@@ -199,6 +195,7 @@
             timerText.textContent = timeLeft;
             timerProgress.style.strokeDasharray = circumference;
             timerProgress.style.strokeDashoffset = 0;
+            timerText.classList.remove('timer-warning');
             
             timerInterval = setInterval(() => {
                 if (answerLocked) return;

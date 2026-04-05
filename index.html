@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Литературные миры | Викторина + Бродилка</title>
+    <title>Литературные миры</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,7 +13,7 @@
             <div class="glow-effect"></div>
         </div>
         <p class="subtitle">Выбери автора и режим игры</p>
-        
+
         <div class="worlds-grid">
             <!-- Лермонтов -->
             <div class="world-card" data-author="lermontov">
@@ -25,7 +25,7 @@
                     <button class="play-btn board-btn">🎲 Бродилка</button>
                 </div>
             </div>
-            
+
             <!-- Толстой -->
             <div class="world-card" data-author="tolstoy">
                 <div class="world-icon">⚔️</div>
@@ -36,7 +36,7 @@
                     <button class="play-btn board-btn">🎲 Бродилка</button>
                 </div>
             </div>
-            
+
             <!-- Булгаков -->
             <div class="world-card" data-author="bulgakov">
                 <div class="world-icon">🏙️</div>
@@ -48,50 +48,29 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="info-footer">
             <p>📝 Опросник: 10 вопросов на время, комбо, жизни</p>
-            <p>🎲 Бродилка: проходи клетки, отвечая на вопросы. 8 шагов до финиша.</p>
-            <p>❤️ В обоих режимах 3 жизни. Удачи!</p>
+            <p>🎲 Бродилка: проходи клетки, отвечая на вопросы</p>
         </div>
     </div>
-    
+
     <script>
-        // Функции для перехода
         function startQuiz(author) {
             localStorage.setItem('currentWorld', author);
             localStorage.setItem('gameMode', 'quiz');
             window.location.href = 'game.html';
         }
-        
         function startBoard(author) {
             localStorage.setItem('boardAuthor', author);
             window.location.href = 'board.html';
         }
-        
-        // Назначаем обработчики после полной загрузки DOM
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.world-card').forEach(card => {
-                const author = card.getAttribute('data-author');
-                const quizBtn = card.querySelector('.quiz-btn');
-                const boardBtn = card.querySelector('.board-btn');
-                
-                if (quizBtn) {
-                    quizBtn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        startQuiz(author);
-                    });
-                }
-                if (boardBtn) {
-                    boardBtn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        startBoard(author);
-                    });
-                }
-            });
-            
-            // Для отладки: выводим сообщение в консоль
-            console.log('Страница загружена, кнопки активны');
+        document.querySelectorAll('.world-card').forEach(card => {
+            const author = card.getAttribute('data-author');
+            const quizBtn = card.querySelector('.quiz-btn');
+            const boardBtn = card.querySelector('.board-btn');
+            if (quizBtn) quizBtn.addEventListener('click', (e) => { e.stopPropagation(); startQuiz(author); });
+            if (boardBtn) boardBtn.addEventListener('click', (e) => { e.stopPropagation(); startBoard(author); });
         });
     </script>
 </body>

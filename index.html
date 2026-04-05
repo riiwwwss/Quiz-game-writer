@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Литературные миры | 3D Квест</title>
+    <title>Литературные миры | 3D Квест + Бродилка</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,11 +13,11 @@
             <div class="glow-effect"></div>
         </div>
         <p class="subtitle">3D-квест по произведениям русской литературы</p>
-        <p class="subtitle-small">Выбери писателя и погрузись в мир героев</p>
+        <p class="subtitle-small">Выбери режим и погрузись в мир героев</p>
         
         <div class="worlds-grid">
-            <!-- Лермонтов -->
-            <div class="world-card" data-world="lermontov">
+            <!-- Лермонтов (викторина) -->
+            <div class="world-card" data-world="lermontov" data-mode="quiz">
                 <div class="world-icon">🏔️</div>
                 <h2>М.Ю. Лермонтов</h2>
                 <p class="world-desc">«Герой нашего времени» • Кавказ • Дуэль</p>
@@ -26,11 +26,11 @@
                     <span>⏱️ 10 сек</span>
                     <span>❤️ 3 жизни</span>
                 </div>
-                <button class="play-btn">Начать квест →</button>
+                <button class="play-btn">Квест →</button>
             </div>
             
-            <!-- Толстой -->
-            <div class="world-card" data-world="tolstoy">
+            <!-- Толстой (викторина) -->
+            <div class="world-card" data-world="tolstoy" data-mode="quiz">
                 <div class="world-icon">⚔️</div>
                 <h2>Л.Н. Толстой</h2>
                 <p class="world-desc">«Война и мир» • Бородино • Судьба России</p>
@@ -39,11 +39,11 @@
                     <span>⏱️ 10 сек</span>
                     <span>❤️ 3 жизни</span>
                 </div>
-                <button class="play-btn">Начать квест →</button>
+                <button class="play-btn">Квест →</button>
             </div>
             
-            <!-- Булгаков -->
-            <div class="world-card" data-world="bulgakov">
+            <!-- Булгаков (викторина) -->
+            <div class="world-card" data-world="bulgakov" data-mode="quiz">
                 <div class="world-icon">🏙️</div>
                 <h2>М.А. Булгаков</h2>
                 <p class="world-desc">«Белая гвардия» • Киев 1918 • Дом Турбиных</p>
@@ -52,27 +52,52 @@
                     <span>⏱️ 10 сек</span>
                     <span>❤️ 3 жизни</span>
                 </div>
-                <button class="play-btn">Начать квест →</button>
+                <button class="play-btn">Квест →</button>
+            </div>
+
+            <!-- НОВАЯ КАРТОЧКА: БРОДИЛКА -->
+            <div class="world-card" data-mode="adventure">
+                <div class="world-icon">🗺️</div>
+                <h2>Литературная бродилка</h2>
+                <p class="world-desc">«Белая гвардия» • Киев 1918 • Выбери свой путь</p>
+                <div class="world-stats">
+                    <span>🚶 6 локаций</span>
+                    <span>❓ Судьбоносные выборы</span>
+                    <span>📜 3 концовки</span>
+                </div>
+                <button class="play-btn">Начать бродилку →</button>
             </div>
         </div>
         
         <div class="info-footer">
-            <p>🎮 Как играть: отвечай на вопросы за 10 секунд | ❤️ 3 жизни | ⭐ Баллы + бонус за скорость</p>
-            <p>🔥 За 3 правильных ответа подряд – бонусная жизнь!</p>
-            <p>🏆 За правильный ответ +10 баллов + бонус за оставшиеся секунды</p>
+            <p>🎮 Режимы: викторина (10 вопросов на время) и бродилка (выбор пути + вопросы)</p>
+            <p>🔥 В викторине: комбо из 3 ответов даёт +жизнь | 🗺️ В бродилке: каждое решение влияет на финал</p>
+            <p>🏆 Прогресс бродилки сохраняется автоматически</p>
         </div>
     </div>
     
     <script>
-        function startGame(world) {
+        function startQuiz(world) {
             localStorage.setItem('currentWorld', world);
+            localStorage.setItem('gameMode', 'quiz');
             window.location.href = 'game.html';
         }
         
+        function startAdventure() {
+            localStorage.setItem('gameMode', 'adventure');
+            window.location.href = 'adventure.html';
+        }
+        
         document.querySelectorAll('.world-card').forEach(card => {
-            const world = card.dataset.world;
+            const mode = card.dataset.mode;
             const btn = card.querySelector('.play-btn');
-            const clickHandler = () => startGame(world);
+            let clickHandler;
+            if (mode === 'quiz') {
+                const world = card.dataset.world;
+                clickHandler = () => startQuiz(world);
+            } else if (mode === 'adventure') {
+                clickHandler = () => startAdventure();
+            }
             card.addEventListener('click', clickHandler);
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();

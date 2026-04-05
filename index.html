@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Литературные миры | 3D Квест + Бродилка</title>
+    <title>Литературные миры | Викторина + Бродилка</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,96 +12,74 @@
             <h1 class="main-title">📚 Литературные миры</h1>
             <div class="glow-effect"></div>
         </div>
-        <p class="subtitle">3D-квест по произведениям русской литературы</p>
-        <p class="subtitle-small">Выбери режим и погрузись в мир героев</p>
+        <p class="subtitle">Выбери автора и режим игры</p>
         
         <div class="worlds-grid">
-            <!-- Лермонтов (викторина) -->
-            <div class="world-card" data-world="lermontov" data-mode="quiz">
+            <!-- Лермонтов -->
+            <div class="world-card" data-author="lermontov">
                 <div class="world-icon">🏔️</div>
                 <h2>М.Ю. Лермонтов</h2>
                 <p class="world-desc">«Герой нашего времени» • Кавказ • Дуэль</p>
-                <div class="world-stats">
-                    <span>📖 10 вопросов</span>
-                    <span>⏱️ 10 сек</span>
-                    <span>❤️ 3 жизни</span>
+                <div class="button-group">
+                    <button class="play-btn quiz-btn">📝 Опросник</button>
+                    <button class="play-btn board-btn">🎲 Бродилка</button>
                 </div>
-                <button class="play-btn">Квест →</button>
             </div>
             
-            <!-- Толстой (викторина) -->
-            <div class="world-card" data-world="tolstoy" data-mode="quiz">
+            <!-- Толстой -->
+            <div class="world-card" data-author="tolstoy">
                 <div class="world-icon">⚔️</div>
                 <h2>Л.Н. Толстой</h2>
                 <p class="world-desc">«Война и мир» • Бородино • Судьба России</p>
-                <div class="world-stats">
-                    <span>📖 10 вопросов</span>
-                    <span>⏱️ 10 сек</span>
-                    <span>❤️ 3 жизни</span>
+                <div class="button-group">
+                    <button class="play-btn quiz-btn">📝 Опросник</button>
+                    <button class="play-btn board-btn">🎲 Бродилка</button>
                 </div>
-                <button class="play-btn">Квест →</button>
             </div>
             
-            <!-- Булгаков (викторина) -->
-            <div class="world-card" data-world="bulgakov" data-mode="quiz">
+            <!-- Булгаков -->
+            <div class="world-card" data-author="bulgakov">
                 <div class="world-icon">🏙️</div>
                 <h2>М.А. Булгаков</h2>
                 <p class="world-desc">«Белая гвардия» • Киев 1918 • Дом Турбиных</p>
-                <div class="world-stats">
-                    <span>📖 10 вопросов</span>
-                    <span>⏱️ 10 сек</span>
-                    <span>❤️ 3 жизни</span>
+                <div class="button-group">
+                    <button class="play-btn quiz-btn">📝 Опросник</button>
+                    <button class="play-btn board-btn">🎲 Бродилка</button>
                 </div>
-                <button class="play-btn">Квест →</button>
-            </div>
-
-            <!-- НОВАЯ КАРТОЧКА: БРОДИЛКА -->
-            <div class="world-card" data-mode="adventure">
-                <div class="world-icon">🗺️</div>
-                <h2>Литературная бродилка</h2>
-                <p class="world-desc">«Белая гвардия» • Киев 1918 • Выбери свой путь</p>
-                <div class="world-stats">
-                    <span>🚶 6 локаций</span>
-                    <span>❓ Судьбоносные выборы</span>
-                    <span>📜 3 концовки</span>
-                </div>
-                <button class="play-btn">Начать бродилку →</button>
             </div>
         </div>
         
         <div class="info-footer">
-            <p>🎮 Режимы: викторина (10 вопросов на время) и бродилка (выбор пути + вопросы)</p>
-            <p>🔥 В викторине: комбо из 3 ответов даёт +жизнь | 🗺️ В бродилке: каждое решение влияет на финал</p>
-            <p>🏆 Прогресс бродилки сохраняется автоматически</p>
+            <p>📝 Опросник: 10 вопросов на время, комбо, жизни</p>
+            <p>🎲 Бродилка: проходи клетки, отвечая на вопросы. 8 шагов до финиша.</p>
+            <p>❤️ В обоих режимах 3 жизни. Удачи!</p>
         </div>
     </div>
     
     <script>
-        function startQuiz(world) {
-            localStorage.setItem('currentWorld', world);
+        function startQuiz(author) {
+            localStorage.setItem('currentWorld', author);
             localStorage.setItem('gameMode', 'quiz');
             window.location.href = 'game.html';
         }
         
-        function startAdventure() {
-            localStorage.setItem('gameMode', 'adventure');
-            window.location.href = 'adventure.html';
+        function startBoard(author) {
+            localStorage.setItem('boardAuthor', author);
+            window.location.href = 'board.html';
         }
         
         document.querySelectorAll('.world-card').forEach(card => {
-            const mode = card.dataset.mode;
-            const btn = card.querySelector('.play-btn');
-            let clickHandler;
-            if (mode === 'quiz') {
-                const world = card.dataset.world;
-                clickHandler = () => startQuiz(world);
-            } else if (mode === 'adventure') {
-                clickHandler = () => startAdventure();
-            }
-            card.addEventListener('click', clickHandler);
-            btn.addEventListener('click', (e) => {
+            const author = card.dataset.author;
+            const quizBtn = card.querySelector('.quiz-btn');
+            const boardBtn = card.querySelector('.board-btn');
+            
+            quizBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                clickHandler();
+                startQuiz(author);
+            });
+            boardBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                startBoard(author);
             });
         });
     </script>

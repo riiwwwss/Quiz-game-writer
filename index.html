@@ -58,7 +58,7 @@
         
         <div class="info-footer">
             <p>🎮 Как играть: отвечай на вопросы за 10 секунд | ❤️ 3 жизни | ⭐ Баллы + бонус за скорость</p>
-            <p>📖 30 уникальных вопросов по программе 10-11 класса</p>
+            <p>🔥 За 3 правильных ответа подряд – бонусная жизнь!</p>
             <p>🏆 За правильный ответ +10 баллов + бонус за оставшиеся секунды</p>
         </div>
     </div>
@@ -69,14 +69,13 @@
             window.location.href = 'game.html';
         }
         
-        // Обработчик нажатия как на кнопку, так и на всю карточку
         document.querySelectorAll('.world-card').forEach(card => {
             const world = card.dataset.world;
             const btn = card.querySelector('.play-btn');
             const clickHandler = () => startGame(world);
             card.addEventListener('click', clickHandler);
             btn.addEventListener('click', (e) => {
-                e.stopPropagation(); // чтобы не сработало дважды
+                e.stopPropagation();
                 clickHandler();
             });
         });

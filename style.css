@@ -592,3 +592,18 @@ body::before {
         justify-content: center;
     }
 }
+/* Добавить в конец style.css */
+
+.world-icon {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 15px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f7d44a, #ffaa33);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 64px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transition: transform 0.3s;
+}

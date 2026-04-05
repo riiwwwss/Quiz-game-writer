@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Бродилка: Белая гвардия</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* дополнительные стили для бродилки */
+        .location-card {
+            background: #fff;
+            border-radius: 28px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            animation: fadeSlide 0.4s ease;
+        }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .location-desc {
+            font-size: 18px;
+            line-height: 1.5;
+            color: #2c2c2c;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f5e8;
+            border-radius: 20px;
+        }
+        .choice-btn {
+            display: block;
+            width: 100%;
+            background: linear-gradient(135deg, #f7d44a, #ffaa33);
+            border: none;
+            padding: 14px;
+            margin: 10px 0;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c5530;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            padding-left: 20px;
+        }
+        .choice-btn:hover {
+            transform: translateX(8px);
+            background: #ffcc44;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .question-block {
+            background: #fff3e0;
+            border-left: 6px solid #f7d44a;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 20px;
+        }
+        .question-text {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .mini-option {
+            background: #efe6d4;
+            margin: 8px 0;
+            padding: 10px 15px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .mini-option:hover {
+            background: #f7d44a;
+            transform: translateX(5px);
+        }
+        .reset-adventure {
+            background: #8b5a2b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .adventure-map {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .map-node {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0d5b5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .map-node.visited {
+            background: #2c5530;
+            color: white;
+        }
+        .map-node.current {
+            background: #f7d44a;
+            transform: scale(1.2);
+            box-shadow: 0 0 8px gold;
+        }
+    </style>
+</head>
+<body id="adventureBody" style="background: linear-gradient(135deg, #2c2c3a 0%, #1a1a2a 100%);">
+    <div class="game-container">
+        <div class="game-header">
+            <a href="index.html" class="back-btn">← Главное меню</a>
+            <div class="stats-panel">
+                <div class="stat"><span>❤️</span><span id="lives">3</span></div>
+                <div class="stat"><span>⭐</span><span id="score">0</span></div>
+            </div>
+        </div>
+        
+        <div class="location">
+            <div class="location-icon">🗺️</div>
+            <h3>Литературная бродилка</h3>
+            <p class="location-desc">«Белая гвардия» • Киев 1918 • Судьба Турбиных</p>
+        </div>
+        
+        <!-- Карта локаций -->
+        <div class="adventure-map" id="adventureMap"></div>
+        
+        <!-- Основной контент -->
+        <div id="adventureContent"></div>
+        
+        <button id="resetAdventureBtn" class="reset-adventure" style="display: none;">Начать заново</button>
+    </div>
+    
+    <script>
+        // ========== СЦЕНАРИЙ БРОДИЛКИ (по мотивам "Белой гвардии") ==========
+        const locations = {
+            0: {   // Дом Турбиных
+                name: "Дом Турбиных на Алексеевском спуске",
+                desc: "Тёплый вечер. Кремовые шторы зашторены. Елена, Алексей и Николка пьют чай. Вдруг стук в дверь — это Мышлаевский, весь израненный, сообщает, что город в опасности. Гетман бежал, Петлюра подступает.",
+                choices: [
+                    { text: "Остаться в доме и ждать", next: 1, effect: { lives: -1, score: 0, question: null } },
+                    { text: "Вступить в добровольческий отряд", next: 2, effect: { lives: 0, score: 5, question: null } },
+                    { text: "Помочь раненым в госпитале", next: 3, effect: { lives: 1, score: 10, question: null } }
+                ]
+            },
+            1: {   // Остался дома — осада
+                name: "Осаждённый дом",
+                desc: "Петлюровцы окружили квартал. В доме кончаются припасы. Елена молится. Вы решаете прорываться к своим.",
+                choices: [
+                    { text: "Прорываться с оружием", next: 4, effect: { lives: -2, score: 5, question: "Кто командует петлюровцами?" } },
+                    { text: "Искать подземный ход", next: 5, effect: { lives: 0, score: 10, question: "Какой известный киевский подземный ход упоминается в романе?" } }
+                ]
+            },
+            2: {   // В отряде
+                name: "На позициях",
+                desc: "Вы в отряде юнкеров. Най-Турс командует. Атака петлюровцев.",
+                choices: [
+                    { text: "Идти в атаку", next: 4, effect: { lives: -1, score: 10, question: "Кто погибает, прикрывая юнкеров?" } },
+                    { text: "Отступать с ранеными", next: 3, effect: { lives: 0, score: 5, question: "Кто спасает Алексея Турбина?" } }
+                ]
+            },
+            3: {   // Госпиталь
+                name: "Госпиталь",
+                desc: "Вы помогаете раненным. Среди них — тяжелораненый Алексей Турбин. Елена умоляет вас найти лекарства.",
+                choices: [
+                    { text: "Отправиться в аптеку", next: 5, effect: { lives: 0, score: 5, question: "Какое лекарство нужно Алексею?" } },
+                    { text: "Остаться и молиться", next: 1, effect: { lives: -1, score: 0, question: null } }
+                ]
+            },
+            4: {   // Бой
+                name: "Уличные бои",
+                desc: "Гремит канонада. Вы теряете товарищей. Нужно принимать решение.",
+                choices: [
+                    { text: "Сдаться в плен", next: 6, effect: { lives: -2, score: 0, question: null } },
+                    { text: "Пробиваться к Днепру", next: 7, effect: { lives: -1, score: 15, question: "Кто из героев переплывает Днепр?" } }
+                ]
+            },
+            5: {   // Подземелье / аптека
+                name: "Тайный ход",
+                desc: "Вы находите старый подземный ход. Темно, сыро. Впереди слышны шаги.",
+                choices: [
+                    { text: "Идти на звук", next: 7, effect: { lives: 0, score: 10, question: "Что находит Николка в подвале?" } },
+                    { text: "Вернуться", next: 1, effect: { lives: -1, score: 0, question: null } }
+                ]
+            },
+            6: {   // Плен — плохая концовка
+                name: "Плен",
+                desc: "Петлюровцы берут вас в плен. Допрос. Вы не выдаёте своих. Расстрел на рассвете...",
+                choices: [],
+                isEnding: true,
+                endingText: "💀 Плохая концовка: Вы погибли как герой, но не смогли помочь Турбиным. Перечитайте «Белую гвардию» и попробуйте иной путь."
+            },
+            7: {   // Днепр — хорошая концовка
+                name: "Днепр",
+                desc: "Вы добираетесь до Днепра. Лёд трещит. Позади погоня. Вы прыгаете в воду и плывёте к тому берегу. Выжили! Позже вы встречаете Елену и Николку. Все вместе они эмигрируют в Париж. Дом Турбиных остаётся в памяти.",
+                choices: [],
+                isEnding: true,
+                endingText: "🏆 Хорошая концовка: Вы спаслись и сохранили честь. «Но звёзды останутся...» Получено достижение «Белая гвардия»."
+            }
+        };
+        
+        // Вопросы, которые встречаются в эффектах
+        const questionsMap = {
+            "Кто командует петлюровцами?": { options: ["Симон Петлюра", "Атаман Григорьев", "Тютюнник", "Болбочан"], correct: 0, explanation: "Симон Петлюра — глава Директории УНР." },
+            "Какой известный киевский подземный ход упоминается в романе?": { options: ["Михайловский", "Андреевский спуск", "Кловский", "Печерский"], correct: 0, explanation: "Михайловский ход." },
+            "Кто погибает, прикрывая юнкеров?": { options: ["Алексей Турбин", "Николка Турбин", "Най-Турс", "Мышлаевский"], correct: 2, explanation: "Най-Турс." },
+            "Кто спасает Алексея Турбина?": { options: ["Елена", "Юлия Рейс", "Николка", "Мышлаевский"], correct: 1, explanation: "Юлия Рейс." },
+            "Какое лекарство нужно Алексею?": { options: ["Морфий", "Пенициллин", "Хинин", "Аспирин"], correct: 0, explanation: "Морфий для обезболивания." },
+            "Кто из героев переплывает Днепр?": { options: ["Алексей", "Николка", "Шервинский", "Студзинский"], correct: 1, explanation: "Николка Турбин переплывает Днепр." },
+            "Что находит Николка в подвале?": { options: ["Старое знамя", "Ящик с патронами", "Тело Най-Турса", "Дневник"], correct: 2, explanation: "Тело полковника Най-Турса." }
+        };
+        
+        let currentLocationId = 0;
+        let lives = 3;
+        let score = 0;
+        let visited = [0];
+        let awaitingQuestion = false;
+        let pendingNext = null;
+        let pendingEffect = null;
+        
+        const adventureContent = document.getElementById('adventureContent');
+        const livesSpan = document.getElementById('lives');
+        const scoreSpan = document.getElementById('score');
+        const resetBtn = document.getElementById('resetAdventureBtn');
+        
+        function saveGame() {
+            localStorage.setItem('adventure_save', JSON.stringify({
+                currentLocationId, lives, score, visited
+            }));
+        }
+        
+        function loadGame() {
+            const save = localStorage.getItem('adventure_save');
+            if (save) {
+                try {
+                    const data = JSON.parse(save);
+                    currentLocationId = data.currentLocationId;
+                    lives = data.lives;
+                    score = data.score;
+                    visited = data.visited;
+                } catch(e) {}
+            }
+        }
+        
+        function updateStats() {
+            livesSpan.textContent = lives;
+            scoreSpan.textContent = score;
+            if (lives <= 0) {
+                adventureContent.innerHTML = `<div class="final-screen"><div class="final-icon">💀</div><h2>Поражение</h2><p>У вас закончились жизни. Попробуйте снова.</p><button id="forceReset" class="reset-btn">Начать заново</button></div>`;
+                document.getElementById('forceReset')?.addEventListener('click', () => resetGame());
+                resetBtn.style.display = 'inline-block';
+                return true;
+            }
+            resetBtn.style.display = 'none';
+            return false;
+        }
+        
+        function updateMap() {
+            const mapContainer = document.getElementById('adventureMap');
+            const totalNodes = Object.keys(locations).filter(k => !locations[k].isEnding).length;
+            mapContainer.innerHTML = '';
+            for (let i = 0; i <= 7; i++) {
+                if (locations[i] && !locations[i].isEnding) {
+                    const node = document.createElement('div');
+                    node.className = 'map-node';
+                    if (visited.includes(i)) node.classList.add('visited');
+                    if (i === currentLocationId) node.classList.add('current');
+                    node.textContent = i;
+                    mapContainer.appendChild(node);
+                }
+            }
+        }
+        
+        function showQuestion(questionText, onCorrect, onWrong) {
+            const q = questionsMap[questionText];
+            if (!q) {
+                onCorrect();
+                return;
+            }
+            awaitingQuestion = true;
+            let optionsHtml = q.options.map((opt, idx) => `<div class="mini-option" data-opt="${idx}">${opt}</div>`).join('');
+            adventureContent.innerHTML = `
+                <div class="location-card">
+                    <h3>📖 Вопрос по ходу сюжета</h3>
+                    <div class="question-text">${questionText}</div>
+                    <div class="options" id="questionOptions">${optionsHtml}</div>
+                    <div id="questionFeedback" class="feedback"></div>
+                </div>
+            `;
+            document.querySelectorAll('.mini-option').forEach(opt => {
+                opt.addEventListener('click', (e) => {
+                    if (!awaitingQuestion) return;
+                    const selected = parseInt(opt.dataset.opt);
+                    const isCorrect = (selected === q.correct);
+                    const feedbackDiv = document.getElementById('questionFeedback');
+                    if (isCorrect) {
+                        feedbackDiv.innerHTML = `✅ Правильно! ${q.explanation}`;
+                        feedbackDiv.className = 'feedback correct-feedback';
+                        onCorrect();
+                    } else {
+                        feedbackDiv.innerHTML = `❌ Неправильно. ${q.explanation}`;
+                        feedbackDiv.className = 'feedback wrong-feedback';
+                        onWrong();
+                    }
+                    awaitingQuestion = false;
+                    setTimeout(() => {
+                        if (isCorrect) onCorrect();
+                        else onWrong();
+                    }, 1500);
+                });
+            });
+        }
+        
+        function applyEffect(effect) {
+            if (effect.lives) lives += effect.lives;
+            if (effect.score) score += effect.score;
+            if (effect.question) {
+                // вопрос: если ответит правильно, идём дальше, иначе -1 жизнь и остаёмся на месте?
+                showQuestion(effect.question, 
+                    () => { // correct
+                        updateStats();
+                        if (updateStats()) return;
+                        goToLocation(pendingNext);
+                    },
+                    () => { // wrong
+                        lives -= 1;
+                        updateStats();
+                        if (updateStats()) return;
+                        goToLocation(pendingNext);
+                    }
+                );
+                return false; // не переходить сразу
+            }
+            updateStats();
+            return true; // можно переходить
+        }
+        
+        function goToLocation(locationId) {
+            if (updateStats()) return;
+            const loc = locations[locationId];
+            if (!loc) return;
+            currentLocationId = locationId;
+            if (!visited.includes(locationId)) visited.push(locationId);
+            updateMap();
+            saveGame();
+            
+            if (loc.isEnding) {
+                adventureContent.innerHTML = `
+                    <div class="final-screen">
+                        <div class="final-icon">${loc.endingText.includes('🏆') ? '🏆' : '💀'}</div>
+                        <h2>${loc.name}</h2>
+                        <p>${loc.desc}</p>
+                        <div class="prize">${loc.endingText}</div>
+                        <button id="restartAdventure" class="reset-btn">Пройти заново</button>
+                    </div>
+                `;
+                document.getElementById('restartAdventure')?.addEventListener('click', () => resetGame());
+                resetBtn.style.display = 'none';
+                return;
+            }
+            
+            let choicesHtml = '';
+            for (let ch of loc.choices) {
+                choicesHtml += `<button class="choice-btn" data-next="${ch.next}">➡️ ${ch.text}</button>`;
+            }
+            adventureContent.innerHTML = `
+                <div class="location-card">
+                    <h3>📍 ${loc.name}</h3>
+                    <div class="location-desc">${loc.desc}</div>
+                    <div class="choices-area">${choicesHtml}</div>
+                </div>
+            `;
+            document.querySelectorAll('.choice-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (awaitingQuestion) return;
+                    const nextId = parseInt(btn.dataset.next);
+                    const choice = loc.choices.find(ch => ch.next === nextId);
+                    if (choice && choice.effect) {
+                        pendingNext = nextId;
+                        const canProceed = applyEffect(choice.effect);
+                        if (canProceed) goToLocation(nextId);
+                    } else {
+                        goToLocation(nextId);
+                    }
+                });
+            });
+        }
+        
+        function resetGame() {
+            localStorage.removeItem('adventure_save');
+            currentLocationId = 0;
+            lives = 3;
+            score = 0;
+            visited = [0];
+            awaitingQuestion = false;
+            updateStats();
+            updateMap();
+            goToLocation(0);
+            saveGame();
+        }
+        
+        // Инициализация
+        loadGame();
+        updateStats();
+        updateMap();
+        goToLocation(currentLocationId);
+        resetBtn.addEventListener('click', () => resetGame());
+    </script>
+</body>
+</html>

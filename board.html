@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Литературная бродилка</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .board-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255,248,225,0.95);
+            border-radius: 32px;
+            padding: 25px;
+        }
+        .path {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        .cell {
+            width: 70px;
+            height: 70px;
+            background: #e0d5b5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+        .cell.passed {
+            background: #2c5530;
+            color: white;
+        }
+        .cell.current {
+            background: #f7d44a;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px gold;
+            color: #2c5530;
+        }
+        .cell.future {
+            background: #c0b88a;
+            cursor: pointer;
+        }
+        .cell.future:hover {
+            background: #f7d44a;
+            transform: scale(1.05);
+        }
+        .cell.locked {
+            background: #aaa;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .question-area {
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 24px;
+            animation: fadeIn 0.3s;
+        }
+        .options-grid {
+            display: grid;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .board-option {
+            background: #f5f0e3;
+            padding: 10px 15px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .board-option:hover {
+            background: #f7d44a;
+            transform: translateX(5px);
+        }
+        .feedback {
+            margin-top: 15px;
+        }
+        @media (max-width: 600px) {
+            .cell { width: 50px; height: 50px; font-size: 16px; }
+        }
+    </style>
+</head>
+<body id="boardBody">
+    <div class="board-container">
+        <div class="game-header">
+            <a href="index.html" class="back-btn">← Главное меню</a>
+            <div class="stats-panel">
+                <div class="stat"><span>⭐</span><span id="score">0</span></div>
+                <div class="stat"><span>❤️</span><span id="lives">3</span></div>
+            </div>
+        </div>
+        
+        <div class="location">
+            <div class="location-icon" id="boardIcon">📖</div>
+            <h3 id="boardTitle">Загрузка...</h3>
+            <p class="location-desc" id="boardDesc"></p>
+        </div>
+        
+        <div class="path" id="pathContainer"></div>
+        <div id="questionPanel" class="question-area"></div>
+        
+        <button id="resetBoardBtn" class="reset-adventure" style="margin-top: 20px;">Начать заново</button>
+    </div>
+    
+    <script>
+        // ========== ДАННЫЕ ПО АВТОРАМ (те же вопросы, что и в викторине) ==========
+        const authorsData = {
+            lermontov: {
+                name: "М.Ю. Лермонтов",
+                icon: "🏔️",
+                desc: "«Герой нашего времени» • Кавказ • Дуэль",
+                bgGradient: "linear-gradient(135deg, #3a5e3a 0%, #2c4a2c 100%)",
+                questions: [
+                    { text: "Как зовут главного героя романа «Герой нашего времени»?", options: ["Евгений Онегин", "Григорий Печорин", "Александр Чацкий", "Дмитрий Рудин"], correct: 1, explanation: "Печорин Григорий Александрович." },
+                    { text: "С кем Печорин стреляется на дуэли?", options: ["Максим Максимыч", "Грушницкий", "Вернер", "Княжна Мери"], correct: 1, explanation: "Дуэль с Грушницким." },
+                    { text: "Как зовут девушку, которую Печорин похищает?", options: ["Княжна Мери", "Вера", "Бэла", "Ундина"], correct: 2, explanation: "Бэла." },
+                    { text: "В какой главе история с контрабандистами?", options: ["Бэла", "Максим Максимыч", "Тамань", "Княжна Мери"], correct: 2, explanation: "Тамань." },
+                    { text: "Кто убивает Вулича?", options: ["Печорин", "Грушницкий", "Пьяный казак", "Контрабандисты"], correct: 2, explanation: "Пьяный казак." },
+                    { text: "Как Печорин относится к судьбе?", options: ["Верит", "Не верит", "Сомневается", "Игнорирует"], correct: 0, explanation: "Верит в предопределение." },
+                    { text: "Кто рассказывает историю о Бэле?", options: ["Печорин", "Вернер", "Максим Максимыч", "Грушницкий"], correct: 2, explanation: "Максим Максимыч." },
+                    { text: "Где происходит глава «Княжна Мери»?", options: ["Тамань", "Пятигорск", "Кисловодск", "Тифлис"], correct: 1, explanation: "Пятигорск." },
+                    { text: "Что происходит с Печориным в конце?", options: ["Женится", "Умирает в Персии", "Становится генералом", "Эмигрирует"], correct: 1, explanation: "Умирает в Персии." },
+                    { text: "Какой тип представляет Печорин?", options: ["Лишний человек", "Маленький человек", "Романтический герой", "Герой-любовник"], correct: 0, explanation: "Лишний человек." }
+                ]
+            },
+            tolstoy: {
+                name: "Л.Н. Толстой",
+                icon: "⚔️",
+                desc: "«Война и мир» • Бородино • Судьба России",
+                bgGradient: "linear-gradient(135deg, #5d3a1a 0%, #8b5a2b 100%)",
+                questions: [
+                    { text: "Сколько томов в романе «Война и мир»?", options: ["3", "4", "5", "6"], correct: 1, explanation: "4 тома." },
+                    { text: "Кто командует русской армией при Бородино?", options: ["Наполеон", "Кутузов", "Багратион", "Барклай"], correct: 1, explanation: "Кутузов." },
+                    { text: "За кого выходит Наташа Ростова?", options: ["Андрей", "Пьер", "Анатоль", "Николай"], correct: 1, explanation: "За Пьера Безухова." },
+                    { text: "Что с Андреем Болконским?", options: ["Женится", "Умирает", "Эмигрирует", "Декабрист"], correct: 1, explanation: "Умирает от ранения." },
+                    { text: "Фамилия Наташи?", options: ["Болконская", "Курагина", "Ростова", "Безухова"], correct: 2, explanation: "Ростова." },
+                    { text: "Кто отдал подводы для раненых?", options: ["Андрей", "Пьер", "Наташа", "Кутузов"], correct: 2, explanation: "Наташа." },
+                    { text: "Главное сражение романа?", options: ["Аустерлиц", "Шенграбен", "Бородино", "Тарутино"], correct: 2, explanation: "Бородино." },
+                    { text: "Кто такой Платон Каратаев?", options: ["Враг", "Учитель", "Сослуживец", "Родственник"], correct: 1, explanation: "Символ мудрости." },
+                    { text: "Что символизирует дуб?", options: ["Смерть", "Возрождение", "Старость", "Войну"], correct: 1, explanation: "Возрождение Андрея." },
+                    { text: "Главная мысль романа?", options: ["Героизм", "Роль народа", "Любовь", "Критика"], correct: 1, explanation: "Историей движет народ." }
+                ]
+            },
+            bulgakov: {
+                name: "М.А. Булгаков",
+                icon: "🏙️",
+                desc: "«Белая гвардия» • Киев 1918 • Дом Турбиных",
+                bgGradient: "linear-gradient(135deg, #2c2c3a 0%, #1a1a2a 100%)",
+                questions: [
+                    { text: "Дом Турбиных находится на...", options: ["Набережной", "Алексеевском спуске", "Крещатике", "Подоле"], correct: 1, explanation: "Алексеевский спуск, 13." },
+                    { text: "Символ дома Турбиных?", options: ["Кремовые шторы", "Библиотека", "Рояль", "Печка"], correct: 0, explanation: "Кремовые шторы." },
+                    { text: "Кто спасает Алексея Турбина?", options: ["Елена", "Юлия Рейс", "Николка", "Мышлаевский"], correct: 1, explanation: "Юлия Рейс." },
+                    { text: "Как зовут сестру Турбиных?", options: ["Наташа", "Елена", "Анна", "Варвара"], correct: 1, explanation: "Елена." },
+                    { text: "Порядок смены власти в Киеве?", options: ["Б→Г→П", "Г→П→Б", "П→Г→Б", "Б→П→Г"], correct: 1, explanation: "Гетман→Петлюра→Большевики." },
+                    { text: "Кто погибает, спасая юнкеров?", options: ["Алексей", "Николка", "Най-Турс", "Мышлаевский"], correct: 2, explanation: "Най-Турс." },
+                    { text: "Что снится Алексею после ранения?", options: ["Война", "Рай", "Дом", "Любовь"], correct: 1, explanation: "Рай, где все равны." },
+                    { text: "Профессия Алексея Турбина?", options: ["Врач", "Военный", "Писатель", "Адвокат"], correct: 0, explanation: "Врач." },
+                    { text: "Что с Николкой в финале?", options: ["Погибает", "Эмигрирует", "Остаётся", "Женится"], correct: 2, explanation: "Остаётся в Киеве." },
+                    { text: "Финальная фраза романа?", options: ["Всё пройдёт", "Звёзды останутся", "Всё будет правильно", "Мир построен"], correct: 1, explanation: "«Но звёзды останутся»." }
+                ]
+            }
+        };
+        
+        // Параметры бродилки
+        const TOTAL_CELLS = 8;  // 8 клеток (0..7, финиш на 7)
+        let currentCell = 0;
+        let score = 0;
+        let lives = 3;
+        let passedCells = [0]; // массив пройденных индексов (включая текущую)
+        let awaitingAnswer = false;
+        let currentQuestion = null;
+        
+        const author = localStorage.getItem('boardAuthor');
+        if (!author || !authorsData[author]) {
+            alert('Ошибка: выберите автора в главном меню');
+            window.location.href = 'index.html';
+        }
+        const data = authorsData[author];
+        
+        // Применяем фон
+        document.getElementById('boardBody').style.background = data.bgGradient;
+        document.getElementById('boardIcon').textContent = data.icon;
+        document.getElementById('boardTitle').textContent = data.name;
+        document.getElementById('boardDesc').textContent = data.desc;
+        
+        const pathContainer = document.getElementById('pathContainer');
+        const questionPanel = document.getElementById('questionPanel');
+        const scoreSpan = document.getElementById('score');
+        const livesSpan = document.getElementById('lives');
+        const resetBtn = document.getElementById('resetBoardBtn');
+        
+        function saveProgress() {
+            localStorage.setItem(`board_${author}`, JSON.stringify({
+                currentCell, score, lives, passedCells
+            }));
+        }
+        
+        function loadProgress() {
+            const saved = localStorage.getItem(`board_${author}`);
+            if (saved) {
+                try {
+                    const p = JSON.parse(saved);
+                    currentCell = p.currentCell;
+                    score = p.score;
+                    lives = p.lives;
+                    passedCells = p.passedCells;
+                } catch(e) {}
+            }
+            updateUI();
+        }
+        
+        function updateUI() {
+            scoreSpan.textContent = score;
+            livesSpan.textContent = lives;
+            drawPath();
+            if (lives <= 0) {
+                questionPanel.innerHTML = `<div class="final-screen"><div class="final-icon">💀</div><h2>Поражение</h2><p>У вас закончились жизни.</p><button id="restartBtn" class="reset-btn">Начать заново</button></div>`;
+                document.getElementById('restartBtn')?.addEventListener('click', () => resetGame());
+                return;
+            }
+            if (currentCell === TOTAL_CELLS - 1) {
+                const totalPossible = TOTAL_CELLS * 10;
+                const percent = (score / totalPossible) * 100;
+                let prizeQuote = "";
+                if (percent >= 80) prizeQuote = "Блестяще! Вы настоящий знаток литературы!";
+                else if (percent >= 50) prizeQuote = "Неплохо! Но есть куда расти.";
+                else prizeQuote = "Перечитайте произведения и попробуйте снова!";
+                questionPanel.innerHTML = `<div class="final-screen"><div class="final-icon">🏆</div><h2>Поздравляем!</h2><div class="final-score">${score} / ${totalPossible} баллов</div><div class="prize">${prizeQuote}</div><button id="restartBtn" class="reset-btn">Пройти ещё раз</button></div>`;
+                document.getElementById('restartBtn')?.addEventListener('click', () => resetGame());
+                return;
+            }
+        }
+        
+        function drawPath() {
+            pathContainer.innerHTML = '';
+            for (let i = 0; i < TOTAL_CELLS; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.textContent = i+1;
+                if (passedCells.includes(i)) {
+                    cell.classList.add('passed');
+                }
+                if (i === currentCell) {
+                    cell.classList.add('current');
+                }
+                if (i > currentCell && !passedCells.includes(i)) {
+                    // следующая клетка (только +1) доступна для клика
+                    if (i === currentCell + 1) {
+                        cell.classList.add('future');
+                        cell.addEventListener('click', () => attemptMove(i));
+                    } else {
+                        cell.classList.add('locked');
+                    }
+                } else if (i < currentCell) {
+                    cell.classList.add('passed');
+                }
+                pathContainer.appendChild(cell);
+            }
+        }
+        
+        function attemptMove(targetCell) {
+            if (awaitingAnswer) return;
+            if (targetCell !== currentCell + 1) return;
+            if (lives <= 0) return;
+            // Генерируем случайный вопрос из банка автора
+            const q = data.questions[Math.floor(Math.random() * data.questions.length)];
+            currentQuestion = q;
+            showQuestion(q, targetCell);
+        }
+        
+        function showQuestion(q, targetCell) {
+            awaitingAnswer = true;
+            let optionsHtml = q.options.map((opt, idx) => `<div class="board-option" data-opt="${idx}">${opt}</div>`).join('');
+            questionPanel.innerHTML = `
+                <div class="question-book">📖 Вопрос для перехода на клетку ${targetCell+1}</div>
+                <div class="question-text">${q.text}</div>
+                <div class="options-grid" id="boardOptions">${optionsHtml}</div>
+                <div id="boardFeedback" class="feedback"></div>
+            `;
+            document.querySelectorAll('.board-option').forEach(opt => {
+                opt.addEventListener('click', (e) => {
+                    if (!awaitingAnswer) return;
+                    const selected = parseInt(opt.dataset.opt);
+                    const isCorrect = (selected === q.correct);
+                    const feedbackDiv = document.getElementById('boardFeedback');
+                    if (isCorrect) {
+                        const points = 10;
+                        score += points;
+                        feedbackDiv.innerHTML = `✅ Правильно! +${points} баллов. ${q.explanation}`;
+                        feedbackDiv.className = 'feedback correct-feedback';
+                        // Перемещаемся на клетку
+                        currentCell = targetCell;
+                        if (!passedCells.includes(targetCell)) passedCells.push(targetCell);
+                        saveProgress();
+                        updateUI();
+                        awaitingAnswer = false;
+                        // Очищаем вопрос через 1.5 секунды
+                        setTimeout(() => {
+                            if (lives > 0 && currentCell !== TOTAL_CELLS-1) {
+                                questionPanel.innerHTML = `<p style="text-align:center; padding:20px;">✅ Переход на клетку ${currentCell+1} успешен!<br>Нажмите на следующую клетку, чтобы продолжить.</p>`;
+                            } else {
+                                updateUI();
+                            }
+                        }, 1500);
+                    } else {
+                        lives--;
+                        feedbackDiv.innerHTML = `❌ Неправильно. ${q.explanation} -1 жизнь.`;
+                        feedbackDiv.className = 'feedback wrong-feedback';
+                        saveProgress();
+                        updateUI();
+                        awaitingAnswer = false;
+                        setTimeout(() => {
+                            if (lives > 0 && currentCell !== TOTAL_CELLS-1) {
+                                questionPanel.innerHTML = `<p style="text-align:center; padding:20px;">😔 Остались на клетке ${currentCell+1}. Попробуйте снова нажать на следующую клетку.</p>`;
+                            } else {
+                                updateUI();
+                            }
+                        }, 1500);
+                    }
+                });
+            });
+        }
+        
+        function resetGame() {
+            currentCell = 0;
+            score = 0;
+            lives = 3;
+            passedCells = [0];
+            saveProgress();
+            updateUI();
+            questionPanel.innerHTML = `<p style="text-align:center; padding:20px;">Нажмите на клетку 2, чтобы начать путь!</p>`;
+        }
+        
+        loadProgress();
+        resetBtn.addEventListener('click', () => resetGame());
+    </script>
+</body>
+</html>

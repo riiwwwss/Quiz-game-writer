@@ -103,6 +103,7 @@
         if (!world || !worldsData[world]) {
             alert('Пожалуйста, выберите писателя в главном меню.');
             window.location.href = 'index.html';
+            return;
         }
         
         const worldData = worldsData[world];

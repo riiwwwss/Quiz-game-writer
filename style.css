@@ -767,3 +767,17 @@ body::before {
     margin-top: 20px;
     width: 100%;
 }
+.button-group {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 15px;
+}
+.button-group .play-btn {
+    margin: 0;
+    padding: 8px 16px;
+    font-size: 14px;
+}
+.world-card {
+    padding-bottom: 25px;
+}

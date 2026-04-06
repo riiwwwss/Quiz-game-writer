@@ -28,7 +28,6 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
 
-        /* Верхняя панель */
         .game-header {
             display: flex;
             justify-content: space-between;
@@ -80,7 +79,6 @@
             font-weight: bold;
         }
 
-        /* Локация (автор) */
         .location {
             text-align: center;
             margin-bottom: 25px;
@@ -105,11 +103,11 @@
             margin-top: 5px;
         }
 
-        /* Поле 5x5 */
+        /* Поле 5x5 - большие клетки */
         .grid-5x5 {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
+            gap: 12px;
             margin: 30px 0;
             justify-items: center;
             align-items: center;
@@ -118,11 +116,10 @@
         .cell {
             width: 100%;
             aspect-ratio: 1 / 1;
-            max-width: 75px;
+            max-width: 100px;
             background: #c0b88a;
-            border-radius: 16px;
+            border-radius: 20px;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             font-weight: bold;
@@ -131,17 +128,10 @@
             cursor: default;
             color: #5a4a2e;
             text-align: center;
-            padding: 8px;
         }
 
         .cell .cell-icon {
-            font-size: 28px;
-            margin-bottom: 4px;
-        }
-
-        .cell .cell-number {
-            font-size: 11px;
-            opacity: 0.8;
+            font-size: 42px;
         }
 
         .cell.passed {
@@ -152,21 +142,21 @@
         .cell.current {
             background: #f7d44a;
             transform: scale(1.05);
-            box-shadow: 0 0 15px gold;
+            box-shadow: 0 0 20px gold;
             color: #2c5530;
         }
 
         .cell.current .cell-icon {
-            font-size: 32px;
+            font-size: 48px;
         }
 
-        .cell.next {
+        .cell.available {
             background: #90be6d;
             cursor: pointer;
             color: white;
         }
 
-        .cell.next:hover {
+        .cell.available:hover {
             background: #6a994e;
             transform: scale(1.02);
         }
@@ -198,89 +188,149 @@
         }
 
         .legend-icon {
+            font-size: 22px;
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #fff8f0;
+            border-radius: 32px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f7d44a;
+        }
+
+        .modal-header h3 {
+            color: #2c5530;
             font-size: 20px;
         }
 
-        /* Вопросы */
-        .question-area {
-            margin-top: 20px;
-            padding: 20px;
-            background: #fff;
-            border-radius: 24px;
-            animation: fadeIn 0.3s;
-        }
-
-        .question-book {
-            display: inline-block;
-            background: #f7d44a;
-            color: #2c5530;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 15px;
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #8b5a2b;
         }
 
         .question-text {
-            font-size: 18px;
+            font-size: 20px;
             line-height: 1.4;
             color: #2c2c2c;
-            margin-bottom: 20px;
+            margin: 20px 0;
             font-weight: 500;
             background: #f9f5e8;
+            padding: 20px;
+            border-radius: 20px;
+        }
+
+        .timer-area {
+            background: #fff0e0;
+            border-radius: 20px;
             padding: 15px;
-            border-radius: 16px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .timer-display {
+            font-size: 48px;
+            font-weight: bold;
+            font-family: monospace;
+            color: #2c5530;
+            margin: 10px 0;
+        }
+
+        .timer-display.warning {
+            color: #bc4742;
+            animation: timerBlink 0.5s step-end infinite;
+        }
+
+        @keyframes timerBlink {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
         }
 
         .options-grid {
             display: grid;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 12px;
+            margin: 20px 0;
         }
 
-        .board-option {
+        .modal-option {
             background: linear-gradient(135deg, #f5f0e3 0%, #efe6d4 100%);
-            padding: 12px 18px;
-            border-radius: 40px;
+            padding: 14px 18px;
+            border-radius: 50px;
             cursor: pointer;
             transition: 0.2s;
             border: 2px solid transparent;
+            font-size: 16px;
         }
 
-        .board-option:hover:not(.disabled) {
+        .modal-option:hover {
             background: #f7d44a;
             transform: translateX(5px);
         }
 
-        .board-option.correct {
+        .modal-option.correct {
             background: linear-gradient(135deg, #90be6d, #6a994e);
             color: white;
         }
 
-        .board-option.wrong {
+        .modal-option.wrong {
             background: linear-gradient(135deg, #e76f51, #bc4742);
             color: white;
         }
 
-        .board-option.disabled {
-            pointer-events: none;
-            opacity: 0.7;
-        }
-
-        .feedback {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 12px;
+        .modal-feedback {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 16px;
             font-size: 14px;
+            text-align: center;
         }
 
-        .feedback.correct-feedback {
+        .modal-feedback.correct {
             background: #d4edda;
             color: #155724;
             border-left: 4px solid #28a745;
         }
 
-        .feedback.wrong-feedback {
+        .modal-feedback.wrong {
             background: #f8d7da;
             color: #721c24;
             border-left: 4px solid #dc3545;
@@ -341,43 +391,14 @@
             transform: scale(1.05);
         }
 
-        /* Таймер */
-        .timer-question {
-            background: #fff3e0;
-            border-left: 6px solid #f7d44a;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 20px;
-        }
-
-        .timer-display {
-            font-size: 32px;
-            font-weight: bold;
-            text-align: center;
-            color: #e76f51;
-            margin: 10px 0;
-        }
-
-        .timer-warning {
-            animation: timerPulse 0.5s ease-in-out infinite;
-        }
-
-        @keyframes timerPulse {
-            0%, 100% { transform: scale(1); color: #e76f51; }
-            50% { transform: scale(1.1); color: #bc4742; }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
         @media (max-width: 600px) {
-            .grid-5x5 { gap: 6px; }
-            .cell .cell-icon { font-size: 20px; }
-            .cell .cell-number { font-size: 9px; }
-            .legend { gap: 10px; }
+            .grid-5x5 { gap: 8px; }
+            .cell .cell-icon { font-size: 28px; }
+            .cell.current .cell-icon { font-size: 32px; }
+            .legend { gap: 12px; }
             .legend-item { font-size: 11px; }
+            .modal-content { padding: 20px; }
+            .question-text { font-size: 16px; }
         }
     </style>
 </head>
@@ -398,20 +419,29 @@
             <p class="location-desc" id="boardDesc"></p>
         </div>
         
-        <!-- Поле 5x5 -->
         <div class="grid-5x5" id="gridContainer"></div>
         
-        <!-- Легенда -->
         <div class="legend">
             <div class="legend-item"><span class="legend-icon">🎮</span> <span>Ты здесь</span></div>
             <div class="legend-item"><span class="legend-icon">❓</span> <span>Вопрос (+10/20)</span></div>
             <div class="legend-item"><span class="legend-icon">🔗</span> <span>Бонус (+5)</span></div>
             <div class="legend-item"><span class="legend-icon">📌</span> <span>Ловушка (-1 жизнь)</span></div>
-            <div class="legend-item"><span class="legend-icon">⬜</span> <span>Пусто (+0)</span></div>
+            <div class="legend-item"><span class="legend-icon">⬜</span> <span>Пусто</span></div>
             <div class="legend-item"><span class="legend-icon">🏅</span> <span>Финиш</span></div>
         </div>
-        
-        <div id="questionPanel" class="question-area"></div>
+    </div>
+
+    <!-- Модальное окно для вопросов -->
+    <div id="questionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">📖 Вопрос</h3>
+                <button class="modal-close" id="modalCloseBtn">×</button>
+            </div>
+            <div id="modalBody">
+                <!-- Содержимое вопроса будет здесь -->
+            </div>
+        </div>
     </div>
     
     <script>
@@ -465,35 +495,29 @@
         // Вопросы на время (+20 баллов)
         const timedQuestions = {
             lermontov: [
-                { text: "В какой главе романа происходит история с контрабандистами?", options: ["Бэла", "Максим Максимыч", "Тамань", "Княжна Мери"], correct: 2, explanation: "Тамань.", timeLimit: 10, points: 20 },
-                { text: "Кто убивает Вулича в романе?", options: ["Печорин", "Грушницкий", "Пьяный казак", "Контрабандисты"], correct: 2, explanation: "Пьяный казак.", timeLimit: 10, points: 20 },
-                { text: "Как Печорин относится к судьбе?", options: ["Верит", "Не верит", "Сомневается", "Игнорирует"], correct: 0, explanation: "Верит в предопределение.", timeLimit: 10, points: 20 },
-                { text: "Где происходит глава «Княжна Мери»?", options: ["Тамань", "Пятигорск", "Кисловодск", "Тифлис"], correct: 1, explanation: "Пятигорск.", timeLimit: 10, points: 20 },
-                { text: "Что происходит с Печориным в конце?", options: ["Женится", "Умирает в Персии", "Становится генералом", "Эмигрирует"], correct: 1, explanation: "Умирает в Персии.", timeLimit: 10, points: 20 }
+                { text: "В какой главе романа происходит история с контрабандистами?", options: ["Бэла", "Максим Максимыч", "Тамань", "Княжна Мери"], correct: 2, explanation: "Тамань." },
+                { text: "Кто убивает Вулича в романе?", options: ["Печорин", "Грушницкий", "Пьяный казак", "Контрабандисты"], correct: 2, explanation: "Пьяный казак." },
+                { text: "Как Печорин относится к судьбе?", options: ["Верит", "Не верит", "Сомневается", "Игнорирует"], correct: 0, explanation: "Верит в предопределение." },
+                { text: "Где происходит глава «Княжна Мери»?", options: ["Тамань", "Пятигорск", "Кисловодск", "Тифлис"], correct: 1, explanation: "Пятигорск." },
+                { text: "Что происходит с Печориным в конце?", options: ["Женится", "Умирает в Персии", "Становится генералом", "Эмигрирует"], correct: 1, explanation: "Умирает в Персии." }
             ],
             tolstoy: [
-                { text: "Что с Андреем Болконским?", options: ["Женится", "Умирает от ранения", "Эмигрирует", "Декабрист"], correct: 1, explanation: "Умирает от ранения.", timeLimit: 10, points: 20 },
-                { text: "Фамилия Наташи?", options: ["Болконская", "Курагина", "Ростова", "Безухова"], correct: 2, explanation: "Ростова.", timeLimit: 10, points: 20 },
-                { text: "Кто отдал подводы для раненых?", options: ["Андрей", "Пьер", "Наташа", "Кутузов"], correct: 2, explanation: "Наташа.", timeLimit: 10, points: 20 },
-                { text: "Главное сражение романа?", options: ["Аустерлиц", "Шенграбен", "Бородино", "Тарутино"], correct: 2, explanation: "Бородино.", timeLimit: 10, points: 20 },
-                { text: "Что символизирует дуб?", options: ["Смерть", "Возрождение", "Старость", "Войну"], correct: 1, explanation: "Возрождение Андрея.", timeLimit: 10, points: 20 }
+                { text: "Что с Андреем Болконским?", options: ["Женится", "Умирает от ранения", "Эмигрирует", "Декабрист"], correct: 1, explanation: "Умирает от ранения." },
+                { text: "Фамилия Наташи?", options: ["Болконская", "Курагина", "Ростова", "Безухова"], correct: 2, explanation: "Ростова." },
+                { text: "Кто отдал подводы для раненых?", options: ["Андрей", "Пьер", "Наташа", "Кутузов"], correct: 2, explanation: "Наташа." },
+                { text: "Главное сражение романа?", options: ["Аустерлиц", "Шенграбен", "Бородино", "Тарутино"], correct: 2, explanation: "Бородино." },
+                { text: "Что символизирует дуб?", options: ["Смерть", "Возрождение", "Старость", "Войну"], correct: 1, explanation: "Возрождение Андрея." }
             ],
             bulgakov: [
-                { text: "Как зовут сестру Турбиных?", options: ["Наташа", "Елена", "Анна", "Варвара"], correct: 1, explanation: "Елена.", timeLimit: 10, points: 20 },
-                { text: "Порядок смены власти в Киеве?", options: ["Б→Г→П", "Г→П→Б", "П→Г→Б", "Б→П→Г"], correct: 1, explanation: "Гетман→Петлюра→Большевики.", timeLimit: 10, points: 20 },
-                { text: "Что снится Алексею после ранения?", options: ["Война", "Рай", "Дом", "Любовь"], correct: 1, explanation: "Рай, где все равны.", timeLimit: 10, points: 20 },
-                { text: "Профессия Алексея Турбина?", options: ["Врач", "Военный", "Писатель", "Адвокат"], correct: 0, explanation: "Врач.", timeLimit: 10, points: 20 },
-                { text: "Что с Николкой в финале?", options: ["Погибает", "Эмигрирует", "Остаётся", "Женится"], correct: 2, explanation: "Остаётся в Киеве.", timeLimit: 10, points: 20 }
+                { text: "Как зовут сестру Турбиных?", options: ["Наташа", "Елена", "Анна", "Варвара"], correct: 1, explanation: "Елена." },
+                { text: "Порядок смены власти в Киеве?", options: ["Б→Г→П", "Г→П→Б", "П→Г→Б", "Б→П→Г"], correct: 1, explanation: "Гетман→Петлюра→Большевики." },
+                { text: "Что снится Алексею после ранения?", options: ["Война", "Рай", "Дом", "Любовь"], correct: 1, explanation: "Рай, где все равны." },
+                { text: "Профессия Алексея Турбина?", options: ["Врач", "Военный", "Писатель", "Адвокат"], correct: 0, explanation: "Врач." },
+                { text: "Что с Николкой в финале?", options: ["Погибает", "Эмигрирует", "Остаётся", "Женится"], correct: 2, explanation: "Остаётся в Киеве." }
             ]
         };
         
-        // Карта поля 5x5 (25 клеток)
-        // 🎮 - старт (клетка 0)
-        // ❓ - вопрос (обычный или на время случайно)
-        // 🔗 - бонус (+5 очков)
-        // 📌 - ловушка (-1 жизнь)
-        // ⬜ - пусто (ничего)
-        // 🏅 - финиш (последняя клетка)
+        // Карта поля 5x5
         const boardType = [
             ["🎮", "❓", "🔗", "❓", "⬜"],
             ["❓", "⬜", "📌", "🔗", "❓"],
@@ -544,10 +568,13 @@
         const timedQ = timedQuestions[author];
         
         const gridContainer = document.getElementById('gridContainer');
-        const questionPanel = document.getElementById('questionPanel');
         const livesSpan = document.getElementById('lives');
         const scoreSpan = document.getElementById('score');
         const movesSpan = document.getElementById('moves');
+        const modal = document.getElementById('questionModal');
+        const modalBody = document.getElementById('modalBody');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
         
         function stopTimer() {
             if (timerInterval) {
@@ -556,25 +583,41 @@
             }
         }
         
-        function startTimer(onTimeout) {
+        function closeModal() {
+            modal.classList.remove('active');
             stopTimer();
-            timeLeft = 10;
-            const timerDiv = document.getElementById('timerDisplay');
-            if (timerDiv) timerDiv.textContent = timeLeft;
-            
-            timerInterval = setInterval(() => {
-                if (!awaitingAnswer) return;
-                timeLeft--;
-                if (timerDiv) {
-                    timerDiv.textContent = timeLeft;
-                    if (timeLeft <= 3) timerDiv.classList.add('timer-warning');
-                    else timerDiv.classList.remove('timer-warning');
-                }
-                if (timeLeft <= 0) {
-                    stopTimer();
-                    onTimeout();
-                }
-            }, 1000);
+            awaitingAnswer = false;
+        }
+        
+        modalCloseBtn.addEventListener('click', closeModal);
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+        
+        function getAvailableNeighbors(cellIndex) {
+            const cell = linearBoard[cellIndex];
+            const neighbors = [];
+            // Вверх
+            if (cell.row > 0) {
+                const upIndex = (cell.row - 1) * 5 + cell.col;
+                if (!passedCells.includes(upIndex)) neighbors.push(upIndex);
+            }
+            // Вниз
+            if (cell.row < 4) {
+                const downIndex = (cell.row + 1) * 5 + cell.col;
+                if (!passedCells.includes(downIndex)) neighbors.push(downIndex);
+            }
+            // Влево
+            if (cell.col > 0) {
+                const leftIndex = cell.row * 5 + (cell.col - 1);
+                if (!passedCells.includes(leftIndex)) neighbors.push(leftIndex);
+            }
+            // Вправо
+            if (cell.col < 4) {
+                const rightIndex = cell.row * 5 + (cell.col + 1);
+                if (!passedCells.includes(rightIndex)) neighbors.push(rightIndex);
+            }
+            return neighbors;
         }
         
         function updateUI() {
@@ -584,8 +627,8 @@
             drawGrid();
             
             if (lives <= 0) {
-                questionPanel.innerHTML = `
-                    <div class="final-screen">
+                document.querySelector('.board-container').innerHTML += `
+                    <div class="final-screen" style="margin-top:20px;">
                         <div class="final-icon">💀</div>
                         <h2>Поражение...</h2>
                         <p>У вас закончились жизни!</p>
@@ -601,8 +644,8 @@
                 const totalPossible = 25 * 10;
                 const percent = (score / totalPossible) * 100;
                 let prizeQuote = percent >= 80 ? "Блестяще! Вы настоящий знаток литературы!" : (percent >= 50 ? "Неплохо! Но есть куда расти." : "Перечитайте произведения и попробуйте снова!");
-                questionPanel.innerHTML = `
-                    <div class="final-screen">
+                document.querySelector('.board-container').innerHTML += `
+                    <div class="final-screen" style="margin-top:20px;">
                         <div class="final-icon">🏆</div>
                         <h2>Поздравляем! Путь пройден!</h2>
                         <div class="final-score">${score} баллов</div>
@@ -615,7 +658,8 @@
             }
         }
         
-        function getIconForType(type) {
+        function getIconForType(type, isCurrent = false) {
+            if (isCurrent) return '🎮';
             switch(type) {
                 case '🎮': return '🎮';
                 case '❓': return '❓';
@@ -629,29 +673,26 @@
         
         function drawGrid() {
             gridContainer.innerHTML = '';
+            const neighbors = getAvailableNeighbors(currentCell);
+            
             for (let i = 0; i < TOTAL_CELLS; i++) {
                 const cell = linearBoard[i];
                 const cellDiv = document.createElement('div');
                 cellDiv.classList.add('cell');
                 
-                let icon = getIconForType(cell.type);
-                if (i === currentCell) icon = '🎮';
+                const isCurrent = (i === currentCell);
+                const icon = getIconForType(cell.type, isCurrent);
                 
-                cellDiv.innerHTML = `
-                    <div class="cell-icon">${icon}</div>
-                    <div class="cell-number">${cell.row+1},${cell.col+1}</div>
-                `;
+                cellDiv.innerHTML = `<div class="cell-icon">${icon}</div>`;
                 
                 if (passedCells.includes(i) && i !== currentCell) {
                     cellDiv.classList.add('passed');
                 } else if (i === currentCell) {
                     cellDiv.classList.add('current');
-                } else if (i === currentCell + 1 && !passedCells.includes(i)) {
-                    cellDiv.classList.add('next');
-                    if (!awaitingAnswer && lives > 0) {
-                        cellDiv.addEventListener('click', () => askQuestion(i));
-                    }
-                } else if (i > currentCell) {
+                } else if (neighbors.includes(i)) {
+                    cellDiv.classList.add('available');
+                    cellDiv.addEventListener('click', () => moveToCell(i));
+                } else {
                     cellDiv.classList.add('locked');
                 }
                 
@@ -659,67 +700,38 @@
             }
         }
         
-        function askQuestion(targetCell) {
+        function moveToCell(targetCell) {
             if (awaitingAnswer) return;
             if (lives <= 0) return;
-            if (targetCell !== currentCell + 1) return;
             
-            pendingTargetCell = targetCell;
+            const neighbors = getAvailableNeighbors(currentCell);
+            if (!neighbors.includes(targetCell)) return;
+            
             const cellType = linearBoard[targetCell].type;
+            pendingTargetCell = targetCell;
             
             // Обработка разных типов клеток
             if (cellType === '🔗') {
-                // Бонус
                 score += 5;
                 moves++;
                 currentCell = targetCell;
                 if (!passedCells.includes(targetCell)) passedCells.push(targetCell);
                 updateUI();
-                questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#2c5530;">🔗 Бонус! +5 баллов. Переход на клетку (${Math.floor(targetCell/5)+1},${targetCell%5+1})!</p>`;
-                setTimeout(() => {
-                    if (lives > 0 && currentCell !== TOTAL_CELLS - 1) {
-                        questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#5a4a2e;">Нажмите на следующую доступную клетку, чтобы продолжить.</p>`;
-                        drawGrid();
-                    } else {
-                        updateUI();
-                    }
-                }, 1500);
                 return;
             } else if (cellType === '📌') {
-                // Ловушка
                 lives--;
                 moves++;
                 currentCell = targetCell;
                 if (!passedCells.includes(targetCell)) passedCells.push(targetCell);
                 updateUI();
-                questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#721c24;">📌 Ловушка! -1 жизнь. Переход на клетку (${Math.floor(targetCell/5)+1},${targetCell%5+1})!</p>`;
-                setTimeout(() => {
-                    if (lives > 0 && currentCell !== TOTAL_CELLS - 1) {
-                        questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#5a4a2e;">Нажмите на следующую доступную клетку, чтобы продолжить.</p>`;
-                        drawGrid();
-                    } else {
-                        updateUI();
-                    }
-                }, 1500);
                 return;
             } else if (cellType === '⬜') {
-                // Пустая клетка
                 moves++;
                 currentCell = targetCell;
                 if (!passedCells.includes(targetCell)) passedCells.push(targetCell);
                 updateUI();
-                questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#2c5530;">⬜ Пустая клетка! Переход на клетку (${Math.floor(targetCell/5)+1},${targetCell%5+1})!</p>`;
-                setTimeout(() => {
-                    if (lives > 0 && currentCell !== TOTAL_CELLS - 1) {
-                        questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#5a4a2e;">Нажмите на следующую доступную клетку, чтобы продолжить.</p>`;
-                        drawGrid();
-                    } else {
-                        updateUI();
-                    }
-                }, 1500);
                 return;
             } else if (cellType === '🏅') {
-                // Финиш
                 moves++;
                 currentCell = targetCell;
                 if (!passedCells.includes(targetCell)) passedCells.push(targetCell);
@@ -727,8 +739,8 @@
                 return;
             }
             
-            // Тип '❓' - вопрос (случайный: обычный или на время)
-            const isTimed = Math.random() < 0.5; // 50% на timed
+            // Тип '❓' - вопрос
+            const isTimed = Math.random() < 0.5;
             let question = null;
             let pointsValue = 10;
             
@@ -749,96 +761,111 @@
             currentQuestion = question;
             awaitingAnswer = true;
             
-            const optionsHtml = currentQuestion.options.map((opt, idx) => 
-                `<div class="board-option" data-opt="${idx}">${opt}</div>`
+            showModalQuestion(question, pointsValue, isTimedQuestion);
+        }
+        
+        function showModalQuestion(question, pointsValue, isTimed) {
+            const optionsHtml = question.options.map((opt, idx) => 
+                `<div class="modal-option" data-opt="${idx}">${opt}</div>`
             ).join('');
             
             let timerHtml = '';
-            if (isTimedQuestion) {
+            if (isTimed) {
                 timerHtml = `
-                    <div class="timer-question">
-                        <div style="text-align:center;">⏱️ У вас есть 10 секунд! +20 баллов</div>
-                        <div class="timer-display" id="timerDisplay">10</div>
+                    <div class="timer-area">
+                        <div style="font-size: 16px; color: #bc4742; font-weight: bold;">⚠️ ВНИМАНИЕ! Вопрос на время! ⚠️</div>
+                        <div class="timer-display" id="modalTimerDisplay">10</div>
+                        <div style="font-size: 14px; color: #666;">Осталось секунд</div>
                     </div>
                 `;
             }
             
-            questionPanel.innerHTML = `
-                <div class="question-book">📖 ${isTimedQuestion ? 'Вопрос на время! +20 баллов' : 'Обычный вопрос +10 баллов'} (клетка ${Math.floor(targetCell/5)+1},${targetCell%5+1})</div>
-                <div class="question-text">${currentQuestion.text}</div>
+            modalTitle.innerHTML = isTimed ? `⏱️ Вопрос на время! +${pointsValue} баллов` : `📖 Обычный вопрос +${pointsValue} баллов`;
+            
+            modalBody.innerHTML = `
+                <div class="question-text">${question.text}</div>
                 ${timerHtml}
-                <div class="options-grid" id="boardOptions">${optionsHtml}</div>
-                <div id="boardFeedback" class="feedback"></div>
+                <div class="options-grid" id="modalOptions">${optionsHtml}</div>
+                <div id="modalFeedback" class="modal-feedback"></div>
             `;
             
-            if (isTimedQuestion) {
-                startTimer(() => {
-                    if (awaitingAnswer) {
-                        lives--;
-                        const feedbackDiv = document.getElementById('boardFeedback');
-                        feedbackDiv.innerHTML = `⏰ Время вышло! Правильный ответ: «${currentQuestion.options[currentQuestion.correct]}». -1 жизнь.`;
-                        feedbackDiv.className = 'feedback wrong-feedback';
-                        awaitingAnswer = false;
-                        stopTimer();
-                        updateUI();
-                        setTimeout(() => {
-                            if (lives > 0 && currentCell !== TOTAL_CELLS - 1) {
-                                questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#721c24;">😔 Остались на клетке ${Math.floor(currentCell/5)+1},${currentCell%5+1}. Попробуйте снова нажать на следующую клетку.</p>`;
-                                drawGrid();
-                            } else {
-                                updateUI();
+            modal.classList.add('active');
+            
+            if (isTimed) {
+                timeLeft = 10;
+                const timerDisplay = document.getElementById('modalTimerDisplay');
+                if (timerDisplay) timerDisplay.textContent = timeLeft;
+                
+                timerInterval = setInterval(() => {
+                    if (!awaitingAnswer) return;
+                    timeLeft--;
+                    if (timerDisplay) {
+                        timerDisplay.textContent = timeLeft;
+                        if (timeLeft <= 3) {
+                            timerDisplay.classList.add('warning');
+                        }
+                        if (timeLeft <= 0) {
+                            clearInterval(timerInterval);
+                            timerInterval = null;
+                            if (awaitingAnswer) {
+                                handleAnswer(false, null, true);
                             }
-                        }, 2000);
+                        }
                     }
-                });
+                }, 1000);
             }
             
-            document.querySelectorAll('.board-option').forEach(opt => {
+            document.querySelectorAll('.modal-option').forEach(opt => {
                 opt.addEventListener('click', (e) => {
                     if (!awaitingAnswer) return;
                     const selected = parseInt(opt.dataset.opt);
-                    const isCorrect = (selected === currentQuestion.correct);
-                    const feedbackDiv = document.getElementById('boardFeedback');
-                    
-                    if (isCorrect) {
-                        if (isTimedQuestion) stopTimer();
-                        const points = pointsValue;
-                        score += points;
-                        moves++;
-                        currentCell = pendingTargetCell;
-                        if (!passedCells.includes(pendingTargetCell)) passedCells.push(pendingTargetCell);
-                        feedbackDiv.innerHTML = `✅ Правильно! +${points} баллов. ${currentQuestion.explanation}`;
-                        feedbackDiv.className = 'feedback correct-feedback';
-                        opt.classList.add('correct');
-                        awaitingAnswer = false;
-                        updateUI();
-                        setTimeout(() => {
-                            if (lives > 0 && currentCell !== TOTAL_CELLS - 1) {
-                                questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#2c5530;">✅ Переход на клетку (${Math.floor(currentCell/5)+1},${currentCell%5+1}) успешен!<br>Нажмите на следующую доступную клетку.</p>`;
-                                drawGrid();
-                            } else {
-                                updateUI();
-                            }
-                        }, 1500);
-                    } else {
-                        if (isTimedQuestion) stopTimer();
-                        lives--;
-                        feedbackDiv.innerHTML = `❌ Неправильно. ${currentQuestion.explanation} -1 жизнь.`;
-                        feedbackDiv.className = 'feedback wrong-feedback';
-                        opt.classList.add('wrong');
-                        awaitingAnswer = false;
-                        updateUI();
-                        setTimeout(() => {
-                            if (lives > 0 && currentCell !== TOTAL_CELLS - 1) {
-                                questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#721c24;">😔 Остались на клетке ${Math.floor(currentCell/5)+1},${currentCell%5+1}. Попробуйте снова нажать на следующую клетку.</p>`;
-                                drawGrid();
-                            } else {
-                                updateUI();
-                            }
-                        }, 2000);
-                    }
+                    const isCorrect = (selected === question.correct);
+                    handleAnswer(isCorrect, question.explanation, isTimed);
                 });
             });
+        }
+        
+        function handleAnswer(isCorrect, explanation, isTimed) {
+            if (!awaitingAnswer) return;
+            
+            if (isTimed) {
+                stopTimer();
+            }
+            
+            const feedbackDiv = document.getElementById('modalFeedback');
+            const pointsValue = isTimed ? 20 : 10;
+            
+            if (isCorrect) {
+                score += pointsValue;
+                moves++;
+                currentCell = pendingTargetCell;
+                if (!passedCells.includes(pendingTargetCell)) passedCells.push(pendingTargetCell);
+                feedbackDiv.innerHTML = `✅ Правильно! +${pointsValue} баллов. ${explanation}`;
+                feedbackDiv.classList.add('correct');
+                
+                setTimeout(() => {
+                    closeModal();
+                    updateUI();
+                }, 1500);
+            } else {
+                lives--;
+                if (!isCorrect && explanation) {
+                    feedbackDiv.innerHTML = `❌ Неправильно. ${explanation} -1 жизнь.`;
+                } else {
+                    feedbackDiv.innerHTML = `⏰ Время вышло! -1 жизнь.`;
+                }
+                feedbackDiv.classList.add('wrong');
+                
+                setTimeout(() => {
+                    closeModal();
+                    updateUI();
+                    if (lives > 0) {
+                        // Остаёмся на месте
+                    }
+                }, 1500);
+            }
+            
+            awaitingAnswer = false;
         }
         
         function resetGame() {
@@ -848,17 +875,15 @@
             moves = 0;
             passedCells = [0];
             awaitingAnswer = false;
-            currentQuestion = null;
-            pendingTargetCell = null;
             stopTimer();
+            // Удаляем экран окончания если есть
+            const finals = document.querySelectorAll('.final-screen');
+            finals.forEach(el => el.remove());
             updateUI();
-            questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#5a4a2e;">🚀 Нажмите на следующую доступную клетку (зелёную), чтобы начать путь!</p>`;
-            drawGrid();
         }
         
         // Инициализация
         updateUI();
-        questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#5a4a2e;">🚀 Нажмите на следующую доступную клетку (зелёную), чтобы начать путь!</p>`;
     </script>
 </body>
 </html>

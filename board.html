@@ -1,3 +1,10 @@
+Сделал! Теперь **сообщение о поражении** тоже появляется в **отдельном модальном окне** (как и вопросы).
+
+---
+
+## **board.html** (обновлённый — поражение в модальном окне)
+
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -199,7 +206,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.8);
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -271,12 +278,11 @@
             font-size: 48px;
             font-weight: bold;
             font-family: monospace;
-            color: #2c5530;
+            color: #bc4742;
             margin: 10px 0;
         }
 
         .timer-display.warning {
-            color: #bc4742;
             animation: timerBlink 0.5s step-end infinite;
         }
 
@@ -336,19 +342,27 @@
             border-left: 4px solid #dc3545;
         }
 
-        .final-screen {
-            text-align: center;
-            padding: 30px;
+        /* Кнопки в модальном окне */
+        .modal-btn {
+            background: #8b5a2b;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .modal-btn:hover {
+            background: #5a3a1a;
+            transform: scale(1.05);
         }
 
         .final-icon {
             font-size: 70px;
-            margin-bottom: 15px;
-        }
-
-        .final-screen h2 {
-            font-size: 28px;
-            color: #2c5530;
+            text-align: center;
             margin-bottom: 15px;
         }
 
@@ -361,34 +375,7 @@
             padding: 8px 25px;
             border-radius: 50px;
             margin: 15px 0;
-        }
-
-        .prize {
-            background: #f7d44a;
-            padding: 15px;
-            border-radius: 20px;
-            margin: 20px 0;
-            font-style: italic;
-            font-size: 16px;
-            color: #2c5530;
-        }
-
-        .reset-btn {
-            background: #8b5a2b;
-            color: white;
-            text-decoration: none;
-            padding: 10px 25px;
-            border-radius: 40px;
-            display: inline-block;
-            margin-top: 15px;
-            transition: all 0.3s;
-            border: none;
-            cursor: pointer;
-        }
-
-        .reset-btn:hover {
-            background: #5a3a1a;
-            transform: scale(1.05);
+            text-align: center;
         }
 
         @media (max-width: 600px) {
@@ -438,8 +425,39 @@
                 <h3 id="modalTitle">📖 Вопрос</h3>
                 <button class="modal-close" id="modalCloseBtn">×</button>
             </div>
-            <div id="modalBody">
-                <!-- Содержимое вопроса будет здесь -->
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для поражения -->
+    <div id="defeatModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>💀 Поражение</h3>
+                <button class="modal-close" id="defeatCloseBtn">×</button>
+            </div>
+            <div id="defeatBody" style="text-align: center;">
+                <div class="final-icon">💀</div>
+                <p style="font-size: 18px; margin: 15px 0;">У вас закончились жизни!</p>
+                <div class="final-score" id="defeatScore">0 баллов</div>
+                <button id="defeatResetBtn" class="modal-btn">Начать заново</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для победы -->
+    <div id="victoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🏆 Победа!</h3>
+                <button class="modal-close" id="victoryCloseBtn">×</button>
+            </div>
+            <div id="victoryBody" style="text-align: center;">
+                <div class="final-icon">🏆</div>
+                <p style="font-size: 18px; margin: 15px 0;">Поздравляем! Путь пройден!</p>
+                <div class="final-score" id="victoryScore">0 баллов</div>
+                <div class="prize" id="victoryQuote" style="margin: 15px 0;"></div>
+                <button id="victoryResetBtn" class="modal-btn">Пройти заново</button>
             </div>
         </div>
     </div>
@@ -551,6 +569,7 @@
         let isTimedQuestion = false;
         let timerInterval = null;
         let timeLeft = 10;
+        let gameActive = true;
         
         const author = localStorage.getItem('boardAuthor');
         if (!author || !authorsData[author]) {
@@ -571,10 +590,51 @@
         const livesSpan = document.getElementById('lives');
         const scoreSpan = document.getElementById('score');
         const movesSpan = document.getElementById('moves');
-        const modal = document.getElementById('questionModal');
-        const modalBody = document.getElementById('modalBody');
-        const modalTitle = document.getElementById('modalTitle');
+        
+        // Модальные окна
+        const questionModal = document.getElementById('questionModal');
+        const defeatModal = document.getElementById('defeatModal');
+        const victoryModal = document.getElementById('victoryModal');
         const modalCloseBtn = document.getElementById('modalCloseBtn');
+        const defeatCloseBtn = document.getElementById('defeatCloseBtn');
+        const victoryCloseBtn = document.getElementById('victoryCloseBtn');
+        const defeatResetBtn = document.getElementById('defeatResetBtn');
+        const victoryResetBtn = document.getElementById('victoryResetBtn');
+        
+        function closeAllModals() {
+            questionModal.classList.remove('active');
+            defeatModal.classList.remove('active');
+            victoryModal.classList.remove('active');
+        }
+        
+        modalCloseBtn.addEventListener('click', () => {
+            questionModal.classList.remove('active');
+            stopTimer();
+            awaitingAnswer = false;
+        });
+        
+        defeatCloseBtn.addEventListener('click', () => defeatModal.classList.remove('active'));
+        victoryCloseBtn.addEventListener('click', () => victoryModal.classList.remove('active'));
+        
+        defeatResetBtn.addEventListener('click', () => {
+            defeatModal.classList.remove('active');
+            resetGame();
+        });
+        
+        victoryResetBtn.addEventListener('click', () => {
+            victoryModal.classList.remove('active');
+            resetGame();
+        });
+        
+        window.addEventListener('click', (e) => {
+            if (e.target === questionModal) {
+                questionModal.classList.remove('active');
+                stopTimer();
+                awaitingAnswer = false;
+            }
+            if (e.target === defeatModal) defeatModal.classList.remove('active');
+            if (e.target === victoryModal) victoryModal.classList.remove('active');
+        });
         
         function stopTimer() {
             if (timerInterval) {
@@ -583,36 +643,21 @@
             }
         }
         
-        function closeModal() {
-            modal.classList.remove('active');
-            stopTimer();
-            awaitingAnswer = false;
-        }
-        
-        modalCloseBtn.addEventListener('click', closeModal);
-        window.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
-        
         function getAvailableNeighbors(cellIndex) {
             const cell = linearBoard[cellIndex];
             const neighbors = [];
-            // Вверх
             if (cell.row > 0) {
                 const upIndex = (cell.row - 1) * 5 + cell.col;
                 if (!passedCells.includes(upIndex)) neighbors.push(upIndex);
             }
-            // Вниз
             if (cell.row < 4) {
                 const downIndex = (cell.row + 1) * 5 + cell.col;
                 if (!passedCells.includes(downIndex)) neighbors.push(downIndex);
             }
-            // Влево
             if (cell.col > 0) {
                 const leftIndex = cell.row * 5 + (cell.col - 1);
                 if (!passedCells.includes(leftIndex)) neighbors.push(leftIndex);
             }
-            // Вправо
             if (cell.col < 4) {
                 const rightIndex = cell.row * 5 + (cell.col + 1);
                 if (!passedCells.includes(rightIndex)) neighbors.push(rightIndex);
@@ -626,34 +671,23 @@
             movesSpan.textContent = moves;
             drawGrid();
             
+            if (!gameActive) return;
+            
             if (lives <= 0) {
-                document.querySelector('.board-container').innerHTML += `
-                    <div class="final-screen" style="margin-top:20px;">
-                        <div class="final-icon">💀</div>
-                        <h2>Поражение...</h2>
-                        <p>У вас закончились жизни!</p>
-                        <div class="final-score">${score} баллов</div>
-                        <button id="resetBoardBtn" class="reset-btn">Начать заново</button>
-                    </div>
-                `;
-                document.getElementById('resetBoardBtn')?.addEventListener('click', () => resetGame());
+                gameActive = false;
+                document.getElementById('defeatScore').textContent = `${score} баллов`;
+                defeatModal.classList.add('active');
                 return;
             }
             
             if (currentCell === TOTAL_CELLS - 1) {
+                gameActive = false;
                 const totalPossible = 25 * 10;
                 const percent = (score / totalPossible) * 100;
                 let prizeQuote = percent >= 80 ? "Блестяще! Вы настоящий знаток литературы!" : (percent >= 50 ? "Неплохо! Но есть куда расти." : "Перечитайте произведения и попробуйте снова!");
-                document.querySelector('.board-container').innerHTML += `
-                    <div class="final-screen" style="margin-top:20px;">
-                        <div class="final-icon">🏆</div>
-                        <h2>Поздравляем! Путь пройден!</h2>
-                        <div class="final-score">${score} баллов</div>
-                        <div class="prize">${prizeQuote}</div>
-                        <button id="resetBoardBtn" class="reset-btn">Пройти заново</button>
-                    </div>
-                `;
-                document.getElementById('resetBoardBtn')?.addEventListener('click', () => resetGame());
+                document.getElementById('victoryScore').textContent = `${score} баллов`;
+                document.getElementById('victoryQuote').textContent = prizeQuote;
+                victoryModal.classList.add('active');
                 return;
             }
         }
@@ -689,7 +723,7 @@
                     cellDiv.classList.add('passed');
                 } else if (i === currentCell) {
                     cellDiv.classList.add('current');
-                } else if (neighbors.includes(i)) {
+                } else if (neighbors.includes(i) && gameActive) {
                     cellDiv.classList.add('available');
                     cellDiv.addEventListener('click', () => moveToCell(i));
                 } else {
@@ -702,7 +736,7 @@
         
         function moveToCell(targetCell) {
             if (awaitingAnswer) return;
-            if (lives <= 0) return;
+            if (!gameActive) return;
             
             const neighbors = getAvailableNeighbors(currentCell);
             if (!neighbors.includes(targetCell)) return;
@@ -710,7 +744,6 @@
             const cellType = linearBoard[targetCell].type;
             pendingTargetCell = targetCell;
             
-            // Обработка разных типов клеток
             if (cellType === '🔗') {
                 score += 5;
                 moves++;
@@ -780,16 +813,16 @@
                 `;
             }
             
-            modalTitle.innerHTML = isTimed ? `⏱️ Вопрос на время! +${pointsValue} баллов` : `📖 Обычный вопрос +${pointsValue} баллов`;
+            document.getElementById('modalTitle').innerHTML = isTimed ? `⏱️ Вопрос на время! +${pointsValue} баллов` : `📖 Обычный вопрос +${pointsValue} баллов`;
             
-            modalBody.innerHTML = `
+            document.getElementById('modalBody').innerHTML = `
                 <div class="question-text">${question.text}</div>
                 ${timerHtml}
                 <div class="options-grid" id="modalOptions">${optionsHtml}</div>
                 <div id="modalFeedback" class="modal-feedback"></div>
             `;
             
-            modal.classList.add('active');
+            questionModal.classList.add('active');
             
             if (isTimed) {
                 timeLeft = 10;
@@ -809,20 +842,24 @@
                             timerInterval = null;
                             if (awaitingAnswer) {
                                 handleAnswer(false, null, true);
-                            }
+                            }                            }
                         }
-                    }
-                }, 1000);
+                    }, 1000);
+                }
             }
             
-            document.querySelectorAll('.modal-option').forEach(opt => {
-                opt.addEventListener('click', (e) => {
-                    if (!awaitingAnswer) return;
-                    const selected = parseInt(opt.dataset.opt);
-                    const isCorrect = (selected === question.correct);
-                    handleAnswer(isCorrect, question.explanation, isTimed);
+            // Назначаем обработчики на варианты ответов
+            setTimeout(() => {
+                const modalOptions = document.querySelectorAll('#modalOptions .modal-option');
+                modalOptions.forEach(opt => {
+                    opt.addEventListener('click', (e) => {
+                        if (!awaitingAnswer) return;
+                        const selected = parseInt(opt.dataset.opt);
+                        const isCorrect = (selected === question.correct);
+                        handleAnswer(isCorrect, question.explanation, isTimed);
+                    });
                 });
-            });
+            }, 10);
         }
         
         function handleAnswer(isCorrect, explanation, isTimed) {
@@ -844,12 +881,13 @@
                 feedbackDiv.classList.add('correct');
                 
                 setTimeout(() => {
-                    closeModal();
+                    questionModal.classList.remove('active');
+                    awaitingAnswer = false;
                     updateUI();
                 }, 1500);
             } else {
                 lives--;
-                if (!isCorrect && explanation) {
+                if (explanation) {
                     feedbackDiv.innerHTML = `❌ Неправильно. ${explanation} -1 жизнь.`;
                 } else {
                     feedbackDiv.innerHTML = `⏰ Время вышло! -1 жизнь.`;
@@ -857,28 +895,23 @@
                 feedbackDiv.classList.add('wrong');
                 
                 setTimeout(() => {
-                    closeModal();
+                    questionModal.classList.remove('active');
+                    awaitingAnswer = false;
                     updateUI();
-                    if (lives > 0) {
-                        // Остаёмся на месте
-                    }
                 }, 1500);
             }
-            
-            awaitingAnswer = false;
         }
         
         function resetGame() {
+            gameActive = true;
             currentCell = 0;
             score = 0;
             lives = 3;
             moves = 0;
             passedCells = [0];
             awaitingAnswer = false;
+            pendingTargetCell = null;
             stopTimer();
-            // Удаляем экран окончания если есть
-            const finals = document.querySelectorAll('.final-screen');
-            finals.forEach(el => el.remove());
             updateUI();
         }
         

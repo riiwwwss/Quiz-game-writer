@@ -80,8 +80,15 @@
             background: #f7d44a;
             transform: translateX(5px);
         }
-        .feedback {
-            margin-top: 15px;
+        .reset-adventure {
+            background: #8b5a2b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
         }
         @media (max-width: 600px) {
             .cell { width: 50px; height: 50px; font-size: 16px; }
@@ -107,11 +114,10 @@
         <div class="path" id="pathContainer"></div>
         <div id="questionPanel" class="question-area"></div>
         
-        <button id="resetBoardBtn" class="reset-adventure" style="margin-top: 20px;">Начать заново</button>
+        <button id="resetBoardBtn" class="reset-adventure">Начать заново</button>
     </div>
     
     <script>
-        // ========== ДАННЫЕ ПО АВТОРАМ (те же вопросы, что и в викторине) ==========
         const authorsData = {
             lermontov: {
                 name: "М.Ю. Лермонтов",
@@ -119,8 +125,8 @@
                 desc: "«Герой нашего времени» • Кавказ • Дуэль",
                 bgGradient: "linear-gradient(135deg, #3a5e3a 0%, #2c4a2c 100%)",
                 questions: [
-                    { text: "Как зовут главного героя романа «Герой нашего времени»?", options: ["Евгений Онегин", "Григорий Печорин", "Александр Чацкий", "Дмитрий Рудин"], correct: 1, explanation: "Печорин Григорий Александрович." },
-                    { text: "С кем Печорин стреляется на дуэли?", options: ["Максим Максимыч", "Грушницкий", "Вернер", "Княжна Мери"], correct: 1, explanation: "Дуэль с Грушницким." },
+                    { text: "Как зовут главного героя романа?", options: ["Евгений Онегин", "Григорий Печорин", "Александр Чацкий", "Дмитрий Рудин"], correct: 1, explanation: "Печорин." },
+                    { text: "С кем Печорин стреляется на дуэли?", options: ["Максим Максимыч", "Грушницкий", "Вернер", "Княжна Мери"], correct: 1, explanation: "С Грушницким." },
                     { text: "Как зовут девушку, которую Печорин похищает?", options: ["Княжна Мери", "Вера", "Бэла", "Ундина"], correct: 2, explanation: "Бэла." },
                     { text: "В какой главе история с контрабандистами?", options: ["Бэла", "Максим Максимыч", "Тамань", "Княжна Мери"], correct: 2, explanation: "Тамань." },
                     { text: "Кто убивает Вулича?", options: ["Печорин", "Грушницкий", "Пьяный казак", "Контрабандисты"], correct: 2, explanation: "Пьяный казак." },
@@ -137,7 +143,7 @@
                 desc: "«Война и мир» • Бородино • Судьба России",
                 bgGradient: "linear-gradient(135deg, #5d3a1a 0%, #8b5a2b 100%)",
                 questions: [
-                    { text: "Сколько томов в романе «Война и мир»?", options: ["3", "4", "5", "6"], correct: 1, explanation: "4 тома." },
+                    { text: "Сколько томов в романе?", options: ["3", "4", "5", "6"], correct: 1, explanation: "4 тома." },
                     { text: "Кто командует русской армией при Бородино?", options: ["Наполеон", "Кутузов", "Багратион", "Барклай"], correct: 1, explanation: "Кутузов." },
                     { text: "За кого выходит Наташа Ростова?", options: ["Андрей", "Пьер", "Анатоль", "Николай"], correct: 1, explanation: "За Пьера Безухова." },
                     { text: "Что с Андреем Болконским?", options: ["Женится", "Умирает", "Эмигрирует", "Декабрист"], correct: 1, explanation: "Умирает от ранения." },
@@ -169,27 +175,25 @@
             }
         };
         
-        // Параметры бродилки
-        const TOTAL_CELLS = 8;  // 8 клеток (0..7, финиш на 7)
-        let currentCell = 0;
-        let score = 0;
-        let lives = 3;
-        let passedCells = [0]; // массив пройденных индексов (включая текущую)
-        let awaitingAnswer = false;
-        let currentQuestion = null;
-        
         const author = localStorage.getItem('boardAuthor');
         if (!author || !authorsData[author]) {
-            alert('Ошибка: выберите автора в главном меню');
+            alert('Пожалуйста, выберите автора в главном меню');
             window.location.href = 'index.html';
         }
-        const data = authorsData[author];
         
-        // Применяем фон
+        const data = authorsData[author];
         document.getElementById('boardBody').style.background = data.bgGradient;
         document.getElementById('boardIcon').textContent = data.icon;
         document.getElementById('boardTitle').textContent = data.name;
         document.getElementById('boardDesc').textContent = data.desc;
+        
+        const TOTAL_CELLS = 8;
+        let currentCell = 0;
+        let score = 0;
+        let lives = 3;
+        let passedCells = [0];
+        let awaitingAnswer = false;
+        let currentQuestion = null;
         
         const pathContainer = document.getElementById('pathContainer');
         const questionPanel = document.getElementById('questionPanel');
@@ -198,9 +202,7 @@
         const resetBtn = document.getElementById('resetBoardBtn');
         
         function saveProgress() {
-            localStorage.setItem(`board_${author}`, JSON.stringify({
-                currentCell, score, lives, passedCells
-            }));
+            localStorage.setItem(`board_${author}`, JSON.stringify({ currentCell, score, lives, passedCells }));
         }
         
         function loadProgress() {
@@ -229,10 +231,7 @@
             if (currentCell === TOTAL_CELLS - 1) {
                 const totalPossible = TOTAL_CELLS * 10;
                 const percent = (score / totalPossible) * 100;
-                let prizeQuote = "";
-                if (percent >= 80) prizeQuote = "Блестяще! Вы настоящий знаток литературы!";
-                else if (percent >= 50) prizeQuote = "Неплохо! Но есть куда расти.";
-                else prizeQuote = "Перечитайте произведения и попробуйте снова!";
+                let prizeQuote = percent >= 80 ? "Блестяще! Вы настоящий знаток литературы!" : (percent >= 50 ? "Неплохо! Но есть куда расти." : "Перечитайте произведения и попробуйте снова!");
                 questionPanel.innerHTML = `<div class="final-screen"><div class="final-icon">🏆</div><h2>Поздравляем!</h2><div class="final-score">${score} / ${totalPossible} баллов</div><div class="prize">${prizeQuote}</div><button id="restartBtn" class="reset-btn">Пройти ещё раз</button></div>`;
                 document.getElementById('restartBtn')?.addEventListener('click', () => resetGame());
                 return;
@@ -245,14 +244,9 @@
                 const cell = document.createElement('div');
                 cell.classList.add('cell');
                 cell.textContent = i+1;
-                if (passedCells.includes(i)) {
-                    cell.classList.add('passed');
-                }
-                if (i === currentCell) {
-                    cell.classList.add('current');
-                }
+                if (passedCells.includes(i)) cell.classList.add('passed');
+                if (i === currentCell) cell.classList.add('current');
                 if (i > currentCell && !passedCells.includes(i)) {
-                    // следующая клетка (только +1) доступна для клика
                     if (i === currentCell + 1) {
                         cell.classList.add('future');
                         cell.addEventListener('click', () => attemptMove(i));
@@ -270,7 +264,6 @@
             if (awaitingAnswer) return;
             if (targetCell !== currentCell + 1) return;
             if (lives <= 0) return;
-            // Генерируем случайный вопрос из банка автора
             const q = data.questions[Math.floor(Math.random() * data.questions.length)];
             currentQuestion = q;
             showQuestion(q, targetCell);
@@ -296,13 +289,11 @@
                         score += points;
                         feedbackDiv.innerHTML = `✅ Правильно! +${points} баллов. ${q.explanation}`;
                         feedbackDiv.className = 'feedback correct-feedback';
-                        // Перемещаемся на клетку
                         currentCell = targetCell;
                         if (!passedCells.includes(targetCell)) passedCells.push(targetCell);
                         saveProgress();
                         updateUI();
                         awaitingAnswer = false;
-                        // Очищаем вопрос через 1.5 секунды
                         setTimeout(() => {
                             if (lives > 0 && currentCell !== TOTAL_CELLS-1) {
                                 questionPanel.innerHTML = `<p style="text-align:center; padding:20px;">✅ Переход на клетку ${currentCell+1} успешен!<br>Нажмите на следующую клетку, чтобы продолжить.</p>`;

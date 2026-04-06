@@ -10,7 +10,6 @@
     <div class="container">
         <div class="title-animation">
             <h1 class="main-title">📚 Литературные миры</h1>
-            <div class="glow-effect"></div>
         </div>
         <p class="subtitle">Выбери автора и режим игры</p>
 
@@ -52,25 +51,39 @@
         <div class="info-footer">
             <p>📝 Опросник: 10 вопросов на время, комбо, жизни</p>
             <p>🎲 Бродилка: проходи клетки, отвечая на вопросы</p>
+            <p>❤️ В обоих режимах 3 жизни</p>
         </div>
     </div>
 
     <script>
         function startQuiz(author) {
             localStorage.setItem('currentWorld', author);
-            localStorage.setItem('gameMode', 'quiz');
             window.location.href = 'game.html';
         }
         function startBoard(author) {
             localStorage.setItem('boardAuthor', author);
             window.location.href = 'board.html';
         }
-        document.querySelectorAll('.world-card').forEach(card => {
-            const author = card.getAttribute('data-author');
-            const quizBtn = card.querySelector('.quiz-btn');
-            const boardBtn = card.querySelector('.board-btn');
-            if (quizBtn) quizBtn.addEventListener('click', (e) => { e.stopPropagation(); startQuiz(author); });
-            if (boardBtn) boardBtn.addEventListener('click', (e) => { e.stopPropagation(); startBoard(author); });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.world-card').forEach(card => {
+                const author = card.getAttribute('data-author');
+                const quizBtn = card.querySelector('.quiz-btn');
+                const boardBtn = card.querySelector('.board-btn');
+                
+                if (quizBtn) {
+                    quizBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        startQuiz(author);
+                    });
+                }
+                if (boardBtn) {
+                    boardBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        startBoard(author);
+                    });
+                }
+            });
         });
     </script>
 </body>

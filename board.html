@@ -1,11 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Литературная бродилка 5x5</title>
-    <link rel="stylesheet" href="style.css">
     <style>
         * {
             margin: 0;
@@ -104,7 +102,6 @@
             margin-top: 5px;
         }
 
-        /* Поле 5x5 - большие клетки */
         .grid-5x5 {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -168,7 +165,6 @@
             cursor: not-allowed;
         }
 
-        /* Легенда */
         .legend {
             display: flex;
             justify-content: center;
@@ -192,7 +188,6 @@
             font-size: 22px;
         }
 
-        /* Модальное окно */
         .modal {
             display: none;
             position: fixed;
@@ -306,16 +301,6 @@
             transform: translateX(5px);
         }
 
-        .modal-option.correct {
-            background: linear-gradient(135deg, #90be6d, #6a994e);
-            color: white;
-        }
-
-        .modal-option.wrong {
-            background: linear-gradient(135deg, #e76f51, #bc4742);
-            color: white;
-        }
-
         .modal-feedback {
             margin-top: 20px;
             padding: 12px;
@@ -336,7 +321,6 @@
             border-left: 4px solid #dc3545;
         }
 
-        /* Кнопки в модальном окне */
         .modal-btn {
             background: #8b5a2b;
             color: white;
@@ -395,9 +379,9 @@
         </div>
         
         <div class="location" id="location">
-            <div class="location-icon" id="boardIcon">📖</div>
-            <h3 id="boardTitle">Загрузка...</h3>
-            <p class="location-desc" id="boardDesc"></p>
+            <div class="location-icon" id="boardIcon">🏔️</div>
+            <h3 id="boardTitle">М.Ю. Лермонтов</h3>
+            <p class="location-desc" id="boardDesc">«Герой нашего времени» • Кавказ • Дуэль</p>
         </div>
         
         <div class="grid-5x5" id="gridContainer"></div>
@@ -412,7 +396,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно для вопросов -->
     <div id="questionModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -423,7 +406,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно для поражения -->
     <div id="defeatModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -439,7 +421,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно для победы -->
     <div id="victoryModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -450,443 +431,275 @@
                 <div class="final-icon">🏆</div>
                 <p style="font-size: 18px; margin: 15px 0;">Поздравляем! Путь пройден!</p>
                 <div class="final-score" id="victoryScore">0 баллов</div>
-                <div class="prize" id="victoryQuote" style="margin: 15px 0;"></div>
+                <div class="prize" id="victoryQuote" style="margin: 15px 0; background: #f7d44a; padding: 15px; border-radius: 20px;"></div>
                 <button id="victoryResetBtn" class="modal-btn">Пройти заново</button>
             </div>
         </div>
     </div>
     
     <script>
-        // ========== ДАННЫЕ ПО АВТОРАМ ==========
-        const authorsData = {
-            lermontov: {
-                name: "М.Ю. Лермонтов",
-                icon: "🏔️",
-                desc: "«Герой нашего времени» • Кавказ • Дуэль",
-                bgGradient: "linear-gradient(135deg, #3a5e3a 0%, #2c4a2c 100%)"
-            },
-            tolstoy: {
-                name: "Л.Н. Толстой",
-                icon: "⚔️",
-                desc: "«Война и мир» • Бородино • Судьба России",
-                bgGradient: "linear-gradient(135deg, #5d3a1a 0%, #8b5a2b 100%)"
-            },
-            bulgakov: {
-                name: "М.А. Булгаков",
-                icon: "🏙️",
-                desc: "«Белая гвардия» • Киев 1918 • Дом Турбиных",
-                bgGradient: "linear-gradient(135deg, #2c2c3a 0%, #1a1a2a 100%)"
-            }
-        };
-        
-        // Вопросы (обычные)
-        const normalQuestions = {
-            lermontov: [
-                { text: "Как зовут главного героя романа «Герой нашего времени»?", options: ["Евгений Онегин", "Григорий Печорин", "Александр Чацкий", "Дмитрий Рудин"], correct: 1, explanation: "Печорин Григорий Александрович." },
-                { text: "С кем Печорин стреляется на дуэли?", options: ["Максим Максимыч", "Грушницкий", "Вернер", "Княжна Мери"], correct: 1, explanation: "Дуэль с Грушницким." },
-                { text: "Как зовут девушку, которую Печорин похищает?", options: ["Княжна Мери", "Вера", "Бэла", "Ундина"], correct: 2, explanation: "Бэла." },
-                { text: "Кто рассказывает историю о Бэле?", options: ["Печорин", "Вернер", "Максим Максимыч", "Грушницкий"], correct: 2, explanation: "Максим Максимыч." },
-                { text: "Какой тип представляет Печорин?", options: ["Лишний человек", "Маленький человек", "Романтический герой", "Герой-любовник"], correct: 0, explanation: "Лишний человек." }
-            ],
-            tolstoy: [
-                { text: "Сколько томов в романе «Война и мир»?", options: ["3 тома", "4 тома", "5 томов", "6 томов"], correct: 1, explanation: "4 тома." },
-                { text: "Кто командует русской армией при Бородино?", options: ["Наполеон", "Кутузов", "Багратион", "Барклай"], correct: 1, explanation: "Кутузов." },
-                { text: "За кого выходит Наташа Ростова?", options: ["Андрей", "Пьер", "Анатоль", "Николай"], correct: 1, explanation: "За Пьера Безухова." },
-                { text: "Кто такой Платон Каратаев?", options: ["Враг", "Учитель", "Сослуживец", "Родственник"], correct: 1, explanation: "Символ мудрости." },
-                { text: "Главная мысль романа?", options: ["Героизм", "Роль народа", "Любовь", "Критика"], correct: 1, explanation: "Историей движет народ." }
-            ],
-            bulgakov: [
-                { text: "Дом Турбиных находится на...", options: ["Набережной", "Алексеевском спуске", "Крещатике", "Подоле"], correct: 1, explanation: "Алексеевский спуск, 13." },
-                { text: "Символ дома Турбиных?", options: ["Кремовые шторы", "Библиотека", "Рояль", "Печка"], correct: 0, explanation: "Кремовые шторы." },
-                { text: "Кто спасает Алексея Турбина?", options: ["Елена", "Юлия Рейс", "Николка", "Мышлаевский"], correct: 1, explanation: "Юлия Рейс." },
-                { text: "Кто погибает, спасая юнкеров?", options: ["Алексей", "Николка", "Най-Турс", "Мышлаевский"], correct: 2, explanation: "Най-Турс." },
-                { text: "Финальная фраза романа?", options: ["Всё пройдёт", "Звёзды останутся", "Всё будет правильно", "Мир построен"], correct: 1, explanation: "«Но звёзды останутся»." }
-            ]
-        };
-        
-        // Вопросы на время (+20 баллов)
-        const timedQuestions = {
-            lermontov: [
-                { text: "В какой главе романа происходит история с контрабандистами?", options: ["Бэла", "Максим Максимыч", "Тамань", "Княжна Мери"], correct: 2, explanation: "Тамань." },
-                { text: "Кто убивает Вулича в романе?", options: ["Печорин", "Грушницкий", "Пьяный казак", "Контрабандисты"], correct: 2, explanation: "Пьяный казак." },
-                { text: "Как Печорин относится к судьбе?", options: ["Верит", "Не верит", "Сомневается", "Игнорирует"], correct: 0, explanation: "Верит в предопределение." },
-                { text: "Где происходит глава «Княжна Мери»?", options: ["Тамань", "Пятигорск", "Кисловодск", "Тифлис"], correct: 1, explanation: "Пятигорск." },
-                { text: "Что происходит с Печориным в конце?", options: ["Женится", "Умирает в Персии", "Становится генералом", "Эмигрирует"], correct: 1, explanation: "Умирает в Персии." }
-            ],
-            tolstoy: [
-                { text: "Что с Андреем Болконским?", options: ["Женится", "Умирает от ранения", "Эмигрирует", "Декабрист"], correct: 1, explanation: "Умирает от ранения." },
-                { text: "Фамилия Наташи?", options: ["Болконская", "Курагина", "Ростова", "Безухова"], correct: 2, explanation: "Ростова." },
-                { text: "Кто отдал подводы для раненых?", options: ["Андрей", "Пьер", "Наташа", "Кутузов"], correct: 2, explanation: "Наташа." },
-                { text: "Главное сражение романа?", options: ["Аустерлиц", "Шенграбен", "Бородино", "Тарутино"], correct: 2, explanation: "Бородино." },
-                { text: "Что символизирует дуб?", options: ["Смерть", "Возрождение", "Старость", "Войну"], correct: 1, explanation: "Возрождение Андрея." }
-            ],
-            bulgakov: [
-                { text: "Как зовут сестру Турбиных?", options: ["Наташа", "Елена", "Анна", "Варвара"], correct: 1, explanation: "Елена." },
-                { text: "Порядок смены власти в Киеве?", options: ["Б→Г→П", "Г→П→Б", "П→Г→Б", "Б→П→Г"], correct: 1, explanation: "Гетман→Петлюра→Большевики." },
-                { text: "Что снится Алексею после ранения?", options: ["Война", "Рай", "Дом", "Любовь"], correct: 1, explanation: "Рай, где все равны." },
-                { text: "Профессия Алексея Турбина?", options: ["Врач", "Военный", "Писатель", "Адвокат"], correct: 0, explanation: "Врач." },
-                { text: "Что с Николкой в финале?", options: ["Погибает", "Эмигрирует", "Остаётся", "Женится"], correct: 2, explanation: "Остаётся в Киеве." }
-            ]
-        };
-        
-        // Карта поля 5x5
-        const boardType = [
-            ["🎮", "❓", "🔗", "❓", "⬜"],
-            ["❓", "⬜", "📌", "🔗", "❓"],
-            ["🔗", "❓", "⬜", "❓", "🔗"],
-            ["📌", "⬜", "❓", "⬜", "📌"],
-            ["❓", "🔗", "❓", "⬜", "🏅"]
-        ];
-        
-        // Преобразуем в линейный массив
-        const linearBoard = [];
-        for (let i = 0; i < 5; i++) {
-            for (let j = 0; j < 5; j++) {
-                linearBoard.push({
-                    row: i,
-                    col: j,
-                    type: boardType[i][j],
-                    index: linearBoard.length
-                });
-            }
-        }
-        
-        const TOTAL_CELLS = 25;
-        let currentCell = 0;
-        let score = 0;
-        let lives = 3;
-        let moves = 0;
-        let passedCells = [0];
-        let awaitingAnswer = false;
-        let currentQuestion = null;
-        let pendingTargetCell = null;
-        let isTimedQuestion = false;
-        let timerInterval = null;
-        let timeLeft = 10;
-        let gameActive = true;
-        
-        const author = localStorage.getItem('boardAuthor');
-        if (!author || !authorsData[author]) {
-            alert('Пожалуйста, выберите автора в главном меню');
-            window.location.href = 'index.html';
-        }
-        
-        const data = authorsData[author];
-        document.getElementById('boardBody').style.background = data.bgGradient;
-        document.getElementById('boardIcon').textContent = data.icon;
-        document.getElementById('boardTitle').textContent = data.name;
-        document.getElementById('boardDesc').textContent = data.desc;
-        
-        const normalQ = normalQuestions[author];
-        const timedQ = timedQuestions[author];
-        
-        const gridContainer = document.getElementById('gridContainer');
-        const livesSpan = document.getElementById('lives');
-        const scoreSpan = document.getElementById('score');
-        const movesSpan = document.getElementById('moves');
-        
-        // Модальные окна
-        const questionModal = document.getElementById('questionModal');
-        const defeatModal = document.getElementById('defeatModal');
-        const victoryModal = document.getElementById('victoryModal');
-        const modalCloseBtn = document.getElementById('modalCloseBtn');
-        const defeatCloseBtn = document.getElementById('defeatCloseBtn');
-        const victoryCloseBtn = document.getElementById('victoryCloseBtn');
-        const defeatResetBtn = document.getElementById('defeatResetBtn');
-        const victoryResetBtn = document.getElementById('victoryResetBtn');
-        
-        function closeAllModals() {
-            questionModal.classList.remove('active');
-            defeatModal.classList.remove('active');
-            victoryModal.classList.remove('active');
-        }
-        
-        modalCloseBtn.addEventListener('click', () => {
-            questionModal.classList.remove('active');
-            stopTimer();
-            awaitingAnswer = false;
-        });
-        
-        defeatCloseBtn.addEventListener('click', () => defeatModal.classList.remove('active'));
-        victoryCloseBtn.addEventListener('click', () => victoryModal.classList.remove('active'));
-        
-        defeatResetBtn.addEventListener('click', () => {
-            defeatModal.classList.remove('active');
-            resetGame();
-        });
-        
-        victoryResetBtn.addEventListener('click', () => {
-            victoryModal.classList.remove('active');
-            resetGame();
-        });
-        
-        window.addEventListener('click', (e) => {
-            if (e.target === questionModal) {
-                questionModal.classList.remove('active');
-                stopTimer();
-                awaitingAnswer = false;
-            }
-            if (e.target === defeatModal) defeatModal.classList.remove('active');
-            if (e.target === victoryModal) victoryModal.classList.remove('active');
-        });
-        
-        function stopTimer() {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-        }
-        
-        function getAvailableNeighbors(cellIndex) {
-            const cell = linearBoard[cellIndex];
-            const neighbors = [];
-            if (cell.row > 0) {
-                const upIndex = (cell.row - 1) * 5 + cell.col;
-                if (!passedCells.includes(upIndex)) neighbors.push(upIndex);
-            }
-            if (cell.row < 4) {
-                const downIndex = (cell.row + 1) * 5 + cell.col;
-                if (!passedCells.includes(downIndex)) neighbors.push(downIndex);
-            }
-            if (cell.col > 0) {
-                const leftIndex = cell.row * 5 + (cell.col - 1);
-                if (!passedCells.includes(leftIndex)) neighbors.push(leftIndex);
-            }
-            if (cell.col < 4) {
-                const rightIndex = cell.row * 5 + (cell.col + 1);
-                if (!passedCells.includes(rightIndex)) neighbors.push(rightIndex);
-            }
-            return neighbors;
-        }
-        
-        function updateUI() {
-            livesSpan.textContent = lives;
-            scoreSpan.textContent = score;
-            movesSpan.textContent = moves;
-            drawGrid();
+        (function() {
+            // Данные по авторам
+            const authorsData = {
+                lermontov: { name: "М.Ю. Лермонтов", icon: "🏔️", desc: "«Герой нашего времени» • Кавказ • Дуэль", bgGradient: "linear-gradient(135deg, #3a5e3a 0%, #2c4a2c 100%)" },
+                tolstoy: { name: "Л.Н. Толстой", icon: "⚔️", desc: "«Война и мир» • Бородино • Судьба России", bgGradient: "linear-gradient(135deg, #5d3a1a 0%, #8b5a2b 100%)" },
+                bulgakov: { name: "М.А. Булгаков", icon: "🏙️", desc: "«Белая гвардия» • Киев 1918 • Дом Турбиных", bgGradient: "linear-gradient(135deg, #2c2c3a 0%, #1a1a2a 100%)" }
+            };
             
-            if (!gameActive) return;
+            // Вопросы
+            const normalQuestions = {
+                lermontov: [
+                    { text: "Как зовут главного героя романа?", options: ["Евгений Онегин", "Григорий Печорин", "Александр Чацкий", "Дмитрий Рудин"], correct: 1, explanation: "Печорин." },
+                    { text: "С кем Печорин стреляется на дуэли?", options: ["Максим Максимыч", "Грушницкий", "Вернер", "Княжна Мери"], correct: 1, explanation: "С Грушницким." },
+                    { text: "Как зовут девушку, которую Печорин похищает?", options: ["Княжна Мери", "Вера", "Бэла", "Ундина"], correct: 2, explanation: "Бэла." }
+                ],
+                tolstoy: [
+                    { text: "Сколько томов в романе «Война и мир»?", options: ["3", "4", "5", "6"], correct: 1, explanation: "4 тома." },
+                    { text: "Кто командует русской армией при Бородино?", options: ["Наполеон", "Кутузов", "Багратион", "Барклай"], correct: 1, explanation: "Кутузов." },
+                    { text: "За кого выходит Наташа Ростова?", options: ["Андрей", "Пьер", "Анатоль", "Николай"], correct: 1, explanation: "За Пьера." }
+                ],
+                bulgakov: [
+                    { text: "Дом Турбиных находится на...", options: ["Набережной", "Алексеевском спуске", "Крещатике", "Подоле"], correct: 1, explanation: "Алексеевский спуск." },
+                    { text: "Символ дома Турбиных?", options: ["Кремовые шторы", "Библиотека", "Рояль", "Печка"], correct: 0, explanation: "Кремовые шторы." },
+                    { text: "Кто спасает Алексея Турбина?", options: ["Елена", "Юлия Рейс", "Николка", "Мышлаевский"], correct: 1, explanation: "Юлия Рейс." }
+                ]
+            };
             
-            if (lives <= 0) {
-                gameActive = false;
-                document.getElementById('defeatScore').textContent = `${score} баллов`;
-                defeatModal.classList.add('active');
-                return;
-            }
+            const timedQuestions = {
+                lermontov: [
+                    { text: "В какой главе история с контрабандистами?", options: ["Бэла", "Максим Максимыч", "Тамань", "Княжна Мери"], correct: 2, explanation: "Тамань." },
+                    { text: "Кто убивает Вулича?", options: ["Печорин", "Грушницкий", "Пьяный казак", "Контрабандисты"], correct: 2, explanation: "Пьяный казак." }
+                ],
+                tolstoy: [
+                    { text: "Что с Андреем Болконским?", options: ["Женится", "Умирает", "Эмигрирует", "Декабрист"], correct: 1, explanation: "Умирает." },
+                    { text: "Главное сражение романа?", options: ["Аустерлиц", "Шенграбен", "Бородино", "Тарутино"], correct: 2, explanation: "Бородино." }
+                ],
+                bulgakov: [
+                    { text: "Как зовут сестру Турбиных?", options: ["Наташа", "Елена", "Анна", "Варвара"], correct: 1, explanation: "Елена." },
+                    { text: "Финальная фраза романа?", options: ["Всё пройдёт", "Звёзды останутся", "Всё будет правильно", "Мир построен"], correct: 1, explanation: "«Но звёзды останутся»." }
+                ]
+            };
             
-            if (currentCell === TOTAL_CELLS - 1) {
-                gameActive = false;
-                const totalPossible = 25 * 10;
-                const percent = (score / totalPossible) * 100;
-                let prizeQuote = percent >= 80 ? "Блестяще! Вы настоящий знаток литературы!" : (percent >= 50 ? "Неплохо! Но есть куда расти." : "Перечитайте произведения и попробуйте снова!");
-                document.getElementById('victoryScore').textContent = `${score} баллов`;
-                document.getElementById('victoryQuote').textContent = prizeQuote;
-                victoryModal.classList.add('active');
-                return;
-            }
-        }
-        
-        function getIconForType(type, isCurrent = false) {
-            if (isCurrent) return '🎮';
-            switch(type) {
-                case '🎮': return '🎮';
-                case '❓': return '❓';
-                case '🔗': return '🔗';
-                case '📌': return '📌';
-                case '⬜': return '⬜';
-                case '🏅': return '🏅';
-                default: return '❓';
-            }
-        }
-        
-        function drawGrid() {
-            gridContainer.innerHTML = '';
-            const neighbors = getAvailableNeighbors(currentCell);
+            const boardType = [
+                ["🎮", "❓", "🔗", "❓", "⬜"],
+                ["❓", "⬜", "📌", "🔗", "❓"],
+                ["🔗", "❓", "⬜", "❓", "🔗"],
+                ["📌", "⬜", "❓", "⬜", "📌"],
+                ["❓", "🔗", "❓", "⬜", "🏅"]
+            ];
             
-            for (let i = 0; i < TOTAL_CELLS; i++) {
-                const cell = linearBoard[i];
-                const cellDiv = document.createElement('div');
-                cellDiv.classList.add('cell');
-                
-                const isCurrent = (i === currentCell);
-                const icon = getIconForType(cell.type, isCurrent);
-                
-                cellDiv.innerHTML = `<div class="cell-icon">${icon}</div>`;
-                
-                if (passedCells.includes(i) && i !== currentCell) {
-                    cellDiv.classList.add('passed');
-                } else if (i === currentCell) {
-                    cellDiv.classList.add('current');
-                } else if (neighbors.includes(i) && gameActive) {
-                    cellDiv.classList.add('available');
-                    cellDiv.addEventListener('click', () => moveToCell(i));
-                } else {
-                    cellDiv.classList.add('locked');
+            const linearBoard = [];
+            for (let i = 0; i < 5; i++) {
+                for (let j = 0; j < 5; j++) {
+                    linearBoard.push({ row: i, col: j, type: boardType[i][j], index: linearBoard.length });
                 }
+            }
+            
+            const TOTAL_CELLS = 25;
+            let currentCell = 0;
+            let score = 0;
+            let lives = 3;
+            let moves = 0;
+            let passedCells = [0];
+            let awaitingAnswer = false;
+            let pendingTargetCell = null;
+            let isTimedQuestion = false;
+            let timerInterval = null;
+            let gameActive = true;
+            
+            let author = localStorage.getItem('boardAuthor');
+            if (!author || !authorsData[author]) author = 'lermontov';
+            
+            const data = authorsData[author];
+            document.getElementById('boardBody').style.background = data.bgGradient;
+            document.getElementById('boardIcon').textContent = data.icon;
+            document.getElementById('boardTitle').textContent = data.name;
+            document.getElementById('boardDesc').textContent = data.desc;
+            
+            const normalQ = normalQuestions[author];
+            const timedQ = timedQuestions[author];
+            
+            const gridContainer = document.getElementById('gridContainer');
+            const livesSpan = document.getElementById('lives');
+            const scoreSpan = document.getElementById('score');
+            const movesSpan = document.getElementById('moves');
+            
+            const questionModal = document.getElementById('questionModal');
+            const defeatModal = document.getElementById('defeatModal');
+            const victoryModal = document.getElementById('victoryModal');
+            
+            function stopTimer() {
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+            }
+            
+            function closeAllModals() {
+                questionModal.classList.remove('active');
+                defeatModal.classList.remove('active');
+                victoryModal.classList.remove('active');
+            }
+            
+            document.getElementById('modalCloseBtn').onclick = () => { closeAllModals(); stopTimer(); awaitingAnswer = false; };
+            document.getElementById('defeatCloseBtn').onclick = () => defeatModal.classList.remove('active');
+            document.getElementById('victoryCloseBtn').onclick = () => victoryModal.classList.remove('active');
+            document.getElementById('defeatResetBtn').onclick = () => { defeatModal.classList.remove('active'); resetGame(); };
+            document.getElementById('victoryResetBtn').onclick = () => { victoryModal.classList.remove('active'); resetGame(); };
+            
+            function getAvailableNeighbors(cellIndex) {
+                const cell = linearBoard[cellIndex];
+                const neighbors = [];
+                if (cell.row > 0) { const idx = (cell.row - 1) * 5 + cell.col; if (!passedCells.includes(idx)) neighbors.push(idx); }
+                if (cell.row < 4) { const idx = (cell.row + 1) * 5 + cell.col; if (!passedCells.includes(idx)) neighbors.push(idx); }
+                if (cell.col > 0) { const idx = cell.row * 5 + (cell.col - 1); if (!passedCells.includes(idx)) neighbors.push(idx); }
+                if (cell.col < 4) { const idx = cell.row * 5 + (cell.col + 1); if (!passedCells.includes(idx)) neighbors.push(idx); }
+                return neighbors;
+            }
+            
+            function updateUI() {
+                livesSpan.textContent = lives;
+                scoreSpan.textContent = score;
+                movesSpan.textContent = moves;
+                drawGrid();
                 
-                gridContainer.appendChild(cellDiv);
-            }
-        }
-        
-        function moveToCell(targetCell) {
-            if (awaitingAnswer) return;
-            if (!gameActive) return;
-            
-            const neighbors = getAvailableNeighbors(currentCell);
-            if (!neighbors.includes(targetCell)) return;
-            
-            const cellType = linearBoard[targetCell].type;
-            pendingTargetCell = targetCell;
-            
-            if (cellType === '🔗') {
-                score += 5;
-                moves++;
-                currentCell = targetCell;
-                if (!passedCells.includes(targetCell)) passedCells.push(targetCell);
-                updateUI();
-                return;
-            } else if (cellType === '📌') {
-                lives--;
-                moves++;
-                currentCell = targetCell;
-                if (!passedCells.includes(targetCell)) passedCells.push(targetCell);
-                updateUI();
-                return;
-            } else if (cellType === '⬜') {
-                moves++;
-                currentCell = targetCell;
-                if (!passedCells.includes(targetCell)) passedCells.push(targetCell);
-                updateUI();
-                return;
-            } else if (cellType === '🏅') {
-                moves++;
-                currentCell = targetCell;
-                if (!passedCells.includes(targetCell)) passedCells.push(targetCell);
-                updateUI();
-                return;
+                if (!gameActive) return;
+                if (lives <= 0) {
+                    gameActive = false;
+                    document.getElementById('defeatScore').textContent = score + ' баллов';
+                    defeatModal.classList.add('active');
+                    return;
+                }
+                if (currentCell === TOTAL_CELLS - 1) {
+                    gameActive = false;
+                    const percent = (score / 250) * 100;
+                    let quote = percent >= 80 ? "Блестяще!" : (percent >= 50 ? "Неплохо!" : "Попробуйте ещё раз!");
+                    document.getElementById('victoryScore').textContent = score + ' баллов';
+                    document.getElementById('victoryQuote').textContent = quote;
+                    victoryModal.classList.add('active');
+                    return;
+                }
             }
             
-            // Тип '❓' - вопрос
-            const isTimed = Math.random() < 0.5;
-            let question = null;
-            let pointsValue = 10;
-            
-            if (isTimed && timedQ && timedQ.length > 0) {
-                const randomIndex = Math.floor(Math.random() * timedQ.length);
-                question = timedQ[randomIndex];
-                pointsValue = 20;
-                isTimedQuestion = true;
-            } else {
-                const randomIndex = Math.floor(Math.random() * normalQ.length);
-                question = normalQ[randomIndex];
-                pointsValue = 10;
-                isTimedQuestion = false;
+            function getIcon(type, isCurrent) {
+                if (isCurrent) return '🎮';
+                const icons = { '🎮':'🎮', '❓':'❓', '🔗':'🔗', '📌':'📌', '⬜':'⬜', '🏅':'🏅' };
+                return icons[type] || '❓';
             }
             
-            if (!question) return;
+            function drawGrid() {
+                gridContainer.innerHTML = '';
+                const neighbors = getAvailableNeighbors(currentCell);
+                for (let i = 0; i < TOTAL_CELLS; i++) {
+                    const cell = linearBoard[i];
+                    const div = document.createElement('div');
+                    div.className = 'cell';
+                    const isCurrent = (i === currentCell);
+                    div.innerHTML = `<div class="cell-icon">${getIcon(cell.type, isCurrent)}</div>`;
+                    if (passedCells.includes(i) && i !== currentCell) div.classList.add('passed');
+                    else if (i === currentCell) div.classList.add('current');
+                    else if (neighbors.includes(i) && gameActive) {
+                        div.classList.add('available');
+                        div.onclick = () => moveToCell(i);
+                    } else div.classList.add('locked');
+                    gridContainer.appendChild(div);
+                }
+            }
             
-            currentQuestion = question;
-            awaitingAnswer = true;
+            function moveToCell(targetCell) {
+                if (awaitingAnswer || !gameActive) return;
+                if (!getAvailableNeighbors(currentCell).includes(targetCell)) return;
+                
+                const cellType = linearBoard[targetCell].type;
+                pendingTargetCell = targetCell;
+                
+                if (cellType === '🔗') { score += 5; moves++; currentCell = targetCell; if (!passedCells.includes(targetCell)) passedCells.push(targetCell); updateUI(); return; }
+                if (cellType === '📌') { lives--; moves++; currentCell = targetCell; if (!passedCells.includes(targetCell)) passedCells.push(targetCell); updateUI(); return; }
+                if (cellType === '⬜') { moves++; currentCell = targetCell; if (!passedCells.includes(targetCell)) passedCells.push(targetCell); updateUI(); return; }
+                if (cellType === '🏅') { moves++; currentCell = targetCell; if (!passedCells.includes(targetCell)) passedCells.push(targetCell); updateUI(); return; }
+                
+                const isTimed = Math.random() < 0.5;
+                let question, points = 10;
+                if (isTimed && timedQ.length) {
+                    question = timedQ[Math.floor(Math.random() * timedQ.length)];
+                    points = 20;
+                    isTimedQuestion = true;
+                } else {
+                    question = normalQ[Math.floor(Math.random() * normalQ.length)];
+                    points = 10;
+                    isTimedQuestion = false;
+                }
+                if (!question) return;
+                
+                awaitingAnswer = true;
+                showModal(question, points);
+            }
             
-            showModalQuestion(question, pointsValue, isTimedQuestion);
-        }
-        
-        function showModalQuestion(question, pointsValue, isTimed) {
-            const optionsHtml = question.options.map((opt, idx) => 
-                `<div class="modal-option" data-opt="${idx}">${opt}</div>`
-            ).join('');
-            
-            let timerHtml = '';
-            if (isTimed) {
-                timerHtml = `
+            function showModal(question, points) {
+                const optionsHtml = question.options.map((opt, idx) => `<div class="modal-option" data-opt="${idx}">${opt}</div>`).join('');
+                const isTimed = isTimedQuestion;
+                const timerHtml = isTimed ? `
                     <div class="timer-area">
-                        <div style="font-size: 16px; color: #bc4742; font-weight: bold;">⚠️ ВНИМАНИЕ! Вопрос на время! ⚠️</div>
+                        <div style="font-size:16px; color:#bc4742; font-weight:bold;">⚠️ ВНИМАНИЕ! Вопрос на время! ⚠️</div>
                         <div class="timer-display" id="modalTimerDisplay">10</div>
-                        <div style="font-size: 14px; color: #666;">Осталось секунд</div>
+                        <div style="font-size:14px;">Осталось секунд</div>
                     </div>
-                `;
-            }
-            
-            document.getElementById('modalTitle').innerHTML = isTimed ? `⏱️ Вопрос на время! +${pointsValue} баллов` : `📖 Обычный вопрос +${pointsValue} баллов`;
-            
-            document.getElementById('modalBody').innerHTML = `
-                <div class="question-text">${question.text}</div>
-                ${timerHtml}
-                <div class="options-grid" id="modalOptions">${optionsHtml}</div>
-                <div id="modalFeedback" class="modal-feedback"></div>
-            `;
-            
-            questionModal.classList.add('active');
-            
-            if (isTimed) {
-                timeLeft = 10;
-                const timerDisplay = document.getElementById('modalTimerDisplay');
-                if (timerDisplay) timerDisplay.textContent = timeLeft;
+                ` : '';
                 
-                timerInterval = setInterval(() => {
-                    if (!awaitingAnswer) return;
-                    timeLeft--;
-                    if (timerDisplay) {
-                        timerDisplay.textContent = timeLeft;
-                        if (timeLeft <= 3) {
-                            timerDisplay.classList.add('warning');
-                        }
-                        if (timeLeft <= 0) {
-                            clearInterval(timerInterval);
-                            timerInterval = null;
-                            if (awaitingAnswer) {
-                                handleAnswer(false, null, true);
-                            }                            }
+                document.getElementById('modalTitle').innerHTML = isTimed ? `⏱️ Вопрос на время! +${points} баллов` : `📖 Обычный вопрос +${points} баллов`;
+                document.getElementById('modalBody').innerHTML = `
+                    <div class="question-text">${question.text}</div>
+                    ${timerHtml}
+                    <div class="options-grid" id="modalOptions">${optionsHtml}</div>
+                    <div id="modalFeedback" class="modal-feedback"></div>
+                `;
+                questionModal.classList.add('active');
+                
+                if (isTimed) {
+                    let timeLeft = 10;
+                    const timerDisplay = document.getElementById('modalTimerDisplay');
+                    if (timerDisplay) timerDisplay.textContent = timeLeft;
+                    timerInterval = setInterval(() => {
+                        if (!awaitingAnswer) return;
+                        timeLeft--;
+                        if (timerDisplay) {
+                            timerDisplay.textContent = timeLeft;
+                            if (timeLeft <= 3) timerDisplay.classList.add('warning');
+                            if (timeLeft <= 0) {
+                                clearInterval(timerInterval);
+                                if (awaitingAnswer) handleAnswer(false, null, true);
+                            }
                         }
                     }, 1000);
                 }
-            }
-            
-            // Назначаем обработчики на варианты ответов
-            setTimeout(() => {
-                const modalOptions = document.querySelectorAll('#modalOptions .modal-option');
-                modalOptions.forEach(opt => {
-                    opt.addEventListener('click', (e) => {
-                        if (!awaitingAnswer) return;
-                        const selected = parseInt(opt.dataset.opt);
-                        const isCorrect = (selected === question.correct);
-                        handleAnswer(isCorrect, question.explanation, isTimed);
+                
+                setTimeout(() => {
+                    document.querySelectorAll('#modalOptions .modal-option').forEach(opt => {
+                        opt.onclick = () => {
+                            if (!awaitingAnswer) return;
+                            const selected = parseInt(opt.dataset.opt);
+                            handleAnswer(selected === question.correct, question.explanation, isTimed);
+                        };
                     });
-                });
-            }, 10);
-        }
-        
-        function handleAnswer(isCorrect, explanation, isTimed) {
-            if (!awaitingAnswer) return;
-            
-            if (isTimed) {
-                stopTimer();
+                }, 10);
             }
             
-            const feedbackDiv = document.getElementById('modalFeedback');
-            const pointsValue = isTimed ? 20 : 10;
-            
-            if (isCorrect) {
-                score += pointsValue;
-                moves++;
-                currentCell = pendingTargetCell;
-                if (!passedCells.includes(pendingTargetCell)) passedCells.push(pendingTargetCell);
-                feedbackDiv.innerHTML = `✅ Правильно! +${pointsValue} баллов. ${explanation}`;
-                feedbackDiv.classList.add('correct');
+            function handleAnswer(isCorrect, explanation, isTimed) {
+                if (!awaitingAnswer) return;
+                if (isTimed) stopTimer();
                 
-                setTimeout(() => {
-                    questionModal.classList.remove('active');
-                    awaitingAnswer = false;
-                    updateUI();
-                }, 1500);
-            } else {
-                lives--;
-                if (explanation) {
-                    feedbackDiv.innerHTML = `❌ Неправильно. ${explanation} -1 жизнь.`;
+                const feedbackDiv = document.getElementById('modalFeedback');
+                const points = isTimed ? 20 : 10;
+                
+                if (isCorrect) {
+                    score += points;
+                    moves++;
+                    currentCell = pendingTargetCell;
+                    if (!passedCells.includes(pendingTargetCell)) passedCells.push(pendingTargetCell);
+                    feedbackDiv.innerHTML = `✅ Правильно! +${points} баллов. ${explanation || ''}`;
+                    feedbackDiv.className = 'modal-feedback correct';
                 } else {
-                    feedbackDiv.innerHTML = `⏰ Время вышло! -1 жизнь.`;
+                    lives--;
+                    feedbackDiv.innerHTML = `❌ Неправильно. ${explanation || 'Время вышло!'} -1 жизнь.`;
+                    feedbackDiv.className = 'modal-feedback wrong';
                 }
-                feedbackDiv.classList.add('wrong');
                 
                 setTimeout(() => {
                     questionModal.classList.remove('active');
@@ -894,23 +707,21 @@
                     updateUI();
                 }, 1500);
             }
-        }
-        
-        function resetGame() {
-            gameActive = true;
-            currentCell = 0;
-            score = 0;
-            lives = 3;
-            moves = 0;
-            passedCells = [0];
-            awaitingAnswer = false;
-            pendingTargetCell = null;
-            stopTimer();
+            
+            function resetGame() {
+                gameActive = true;
+                currentCell = 0;
+                score = 0;
+                lives = 3;
+                moves = 0;
+                passedCells = [0];
+                awaitingAnswer = false;
+                stopTimer();
+                updateUI();
+            }
+            
             updateUI();
-        }
-        
-        // Инициализация
-        updateUI();
+        })();
     </script>
 </body>
 </html>

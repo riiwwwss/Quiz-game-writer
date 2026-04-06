@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Литературная бродилка</title>
+    <title>Литературная бродилка 5x5</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .board-container {
@@ -77,39 +77,50 @@
             color: #5a4a2e;
             margin-top: 5px;
         }
-        .path {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            margin: 40px 0;
+        /* Поле 5x5 */
+        .grid-5x5 {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin: 30px 0;
+            justify-items: center;
+            align-items: center;
         }
         .cell {
-            width: 70px;
-            height: 70px;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-width: 70px;
             background: #c0b88a;
-            border-radius: 50%;
+            border-radius: 12px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 24px;
+            font-size: 14px;
             transition: all 0.2s;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             cursor: default;
             color: #5a4a2e;
+            text-align: center;
+            padding: 5px;
+        }
+        .cell .cell-number {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        .cell .cell-icon {
+            font-size: 24px;
         }
         .cell.passed {
             background: #2c5530;
             color: white;
-            cursor: default;
         }
         .cell.current {
             background: #f7d44a;
-            transform: scale(1.1);
+            transform: scale(1.05);
             box-shadow: 0 0 15px gold;
             color: #2c5530;
-            cursor: default;
         }
         .cell.next {
             background: #90be6d;
@@ -118,12 +129,27 @@
         }
         .cell.next:hover {
             background: #6a994e;
-            transform: scale(1.05);
+            transform: scale(1.02);
         }
         .cell.locked {
             background: #aaa;
             color: #666;
             cursor: not-allowed;
+        }
+        /* Таймер для вопросов на время */
+        .timer-question {
+            background: #fff3e0;
+            border-left: 6px solid #f7d44a;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 20px;
+        }
+        .timer-display {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            color: #e76f51;
+            margin: 10px 0;
         }
         .question-area {
             margin-top: 20px;
@@ -165,7 +191,7 @@
             transition: 0.2s;
             border: 2px solid transparent;
         }
-        .board-option:hover {
+        .board-option:hover:not(.disabled) {
             background: #f7d44a;
             transform: translateX(5px);
         }
@@ -176,6 +202,10 @@
         .board-option.wrong {
             background: linear-gradient(135deg, #e76f51, #bc4742);
             color: white;
+        }
+        .board-option.disabled {
+            pointer-events: none;
+            opacity: 0.7;
         }
         .feedback {
             margin-top: 15px;
@@ -245,9 +275,17 @@
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes timerPulse {
+            0%, 100% { transform: scale(1); color: #e76f51; }
+            50% { transform: scale(1.05); color: #bc4742; }
+        }
+        .timer-warning {
+            animation: timerPulse 0.5s ease-in-out infinite;
+        }
         @media (max-width: 600px) {
-            .cell { width: 50px; height: 50px; font-size: 18px; }
-            .path { gap: 12px; }
+            .grid-5x5 { gap: 8px; }
+            .cell .cell-icon { font-size: 18px; }
+            .cell .cell-number { font-size: 10px; }
         }
     </style>
 </head>
@@ -268,103 +306,165 @@
             <p class="location-desc" id="boardDesc"></p>
         </div>
         
-        <div class="path" id="pathContainer"></div>
+        <div class="grid-5x5" id="gridContainer"></div>
         <div id="questionPanel" class="question-area"></div>
     </div>
     
     <script>
-        // ========== ДАННЫЕ ПО АВТОРАМ ==========
-        const authorsData = {
-            lermontov: {
-                name: "М.Ю. Лермонтов",
-                icon: "🏔️",
-                desc: "«Герой нашего времени» • Кавказ • Дуэль",
-                bgGradient: "linear-gradient(135deg, #3a5e3a 0%, #2c4a2c 100%)",
-                questions: [
-                    { text: "Как зовут главного героя романа «Герой нашего времени»?", options: ["Евгений Онегин", "Григорий Печорин", "Александр Чацкий", "Дмитрий Рудин"], correct: 1, explanation: "Печорин Григорий Александрович." },
-                    { text: "С кем Печорин стреляется на дуэли?", options: ["Максим Максимыч", "Грушницкий", "Вернер", "Княжна Мери"], correct: 1, explanation: "Дуэль с Грушницким." },
-                    { text: "Как зовут девушку, которую Печорин похищает?", options: ["Княжна Мери", "Вера", "Бэла", "Ундина"], correct: 2, explanation: "Бэла." },
-                    { text: "В какой главе история с контрабандистами?", options: ["Бэла", "Максим Максимыч", "Тамань", "Княжна Мери"], correct: 2, explanation: "Тамань." },
-                    { text: "Кто убивает Вулича?", options: ["Печорин", "Грушницкий", "Пьяный казак", "Контрабандисты"], correct: 2, explanation: "Пьяный казак." },
-                    { text: "Как Печорин относится к судьбе?", options: ["Верит", "Не верит", "Сомневается", "Игнорирует"], correct: 0, explanation: "Верит в предопределение." },
-                    { text: "Кто рассказывает историю о Бэле?", options: ["Печорин", "Вернер", "Максим Максимыч", "Грушницкий"], correct: 2, explanation: "Максим Максимыч." },
-                    { text: "Где происходит глава «Княжна Мери»?", options: ["Тамань", "Пятигорск", "Кисловодск", "Тифлис"], correct: 1, explanation: "Пятигорск." },
-                    { text: "Что происходит с Печориным в конце?", options: ["Женится", "Умирает в Персии", "Становится генералом", "Эмигрирует"], correct: 1, explanation: "Умирает в Персии." },
-                    { text: "Какой тип представляет Печорин?", options: ["Лишний человек", "Маленький человек", "Романтический герой", "Герой-любовник"], correct: 0, explanation: "Лишний человек." }
-                ]
-            },
-            tolstoy: {
-                name: "Л.Н. Толстой",
-                icon: "⚔️",
-                desc: "«Война и мир» • Бородино • Судьба России",
-                bgGradient: "linear-gradient(135deg, #5d3a1a 0%, #8b5a2b 100%)",
-                questions: [
-                    { text: "Сколько томов в романе «Война и мир»?", options: ["3 тома", "4 тома", "5 томов", "6 томов"], correct: 1, explanation: "4 тома." },
-                    { text: "Кто командует русской армией во время Бородинского сражения?", options: ["Наполеон", "Кутузов", "Багратион", "Барклай"], correct: 1, explanation: "Кутузов." },
-                    { text: "За кого в конце выходит замуж Наташа Ростова?", options: ["Андрей Болконский", "Пьер Безухов", "Анатоль Курагин", "Николай Ростов"], correct: 1, explanation: "За Пьера Безухова." },
-                    { text: "Что происходит с Андреем Болконским?", options: ["Женится", "Умирает от ранения", "Эмигрирует", "Становится декабристом"], correct: 1, explanation: "Умирает от ранения." },
-                    { text: "Фамилия Наташи Ростовой?", options: ["Болконская", "Курагина", "Ростова", "Безухова"], correct: 2, explanation: "Ростова." },
-                    { text: "Кто отдал подводы для раненых?", options: ["Андрей", "Пьер", "Наташа", "Кутузов"], correct: 2, explanation: "Наташа." },
-                    { text: "Главное сражение романа?", options: ["Аустерлиц", "Шенграбен", "Бородино", "Тарутино"], correct: 2, explanation: "Бородино." },
-                    { text: "Кто такой Платон Каратаев?", options: ["Враг", "Учитель мудрости", "Сослуживец", "Родственник"], correct: 1, explanation: "Символ народной мудрости." },
-                    { text: "Что символизирует дуб?", options: ["Смерть", "Возрождение", "Старость", "Войну"], correct: 1, explanation: "Символ возрождения Андрея." },
-                    { text: "Главная мысль романа?", options: ["Героизм личности", "Роль народа", "Любовь", "Критика монархии"], correct: 1, explanation: "Историей движет народ." }
-                ]
-            },
-            bulgakov: {
-                name: "М.А. Булгаков",
-                icon: "🏙️",
-                desc: "«Белая гвардия» • Киев 1918 • Дом Турбиных",
-                bgGradient: "linear-gradient(135deg, #2c2c3a 0%, #1a1a2a 100%)",
-                questions: [
-                    { text: "Дом Турбиных находится на...", options: ["Набережной", "Алексеевском спуске", "Крещатике", "Подоле"], correct: 1, explanation: "Алексеевский спуск, 13." },
-                    { text: "Символ дома Турбиных?", options: ["Кремовые шторы", "Библиотека", "Рояль", "Печка"], correct: 0, explanation: "Кремовые шторы." },
-                    { text: "Кто спасает Алексея Турбина?", options: ["Елена", "Юлия Рейс", "Николка", "Мышлаевский"], correct: 1, explanation: "Юлия Рейс." },
-                    { text: "Как зовут сестру Турбиных?", options: ["Наташа", "Елена", "Анна", "Варвара"], correct: 1, explanation: "Елена." },
-                    { text: "Порядок смены власти в Киеве?", options: ["Б→Г→П", "Г→П→Б", "П→Г→Б", "Б→П→Г"], correct: 1, explanation: "Гетман→Петлюра→Большевики." },
-                    { text: "Кто погибает, спасая юнкеров?", options: ["Алексей", "Николка", "Най-Турс", "Мышлаевский"], correct: 2, explanation: "Най-Турс." },
-                    { text: "Что снится Алексею после ранения?", options: ["Война", "Рай", "Дом", "Любовь"], correct: 1, explanation: "Рай, где все равны." },
-                    { text: "Профессия Алексея Турбина?", options: ["Врач", "Военный", "Писатель", "Адвокат"], correct: 0, explanation: "Врач." },
-                    { text: "Что с Николкой в финале?", options: ["Погибает", "Эмигрирует", "Остаётся", "Женится"], correct: 2, explanation: "Остаётся в Киеве." },
-                    { text: "Финальная фраза романа?", options: ["Всё пройдёт", "Звёзды останутся", "Всё будет правильно", "Мир построен"], correct: 1, explanation: "«Но звёзды останутся»." }
-                ]
-            }
+        // ========== ДАННЫЕ ПО АВТОРАМ С ВОПРОСАМИ ==========
+        // Обычные вопросы (без таймера, +10 баллов)
+        const normalQuestions = {
+            lermontov: [
+                { text: "Как зовут главного героя романа «Герой нашего времени»?", options: ["Евгений Онегин", "Григорий Печорин", "Александр Чацкий", "Дмитрий Рудин"], correct: 1, explanation: "Печорин Григорий Александрович." },
+                { text: "С кем Печорин стреляется на дуэли?", options: ["Максим Максимыч", "Грушницкий", "Вернер", "Княжна Мери"], correct: 1, explanation: "Дуэль с Грушницким." },
+                { text: "Как зовут девушку, которую Печорин похищает?", options: ["Княжна Мери", "Вера", "Бэла", "Ундина"], correct: 2, explanation: "Бэла." },
+                { text: "Кто рассказывает историю о Бэле?", options: ["Печорин", "Вернер", "Максим Максимыч", "Грушницкий"], correct: 2, explanation: "Максим Максимыч." },
+                { text: "Какой тип представляет Печорин?", options: ["Лишний человек", "Маленький человек", "Романтический герой", "Герой-любовник"], correct: 0, explanation: "Лишний человек." }
+            ],
+            tolstoy: [
+                { text: "Сколько томов в романе «Война и мир»?", options: ["3 тома", "4 тома", "5 томов", "6 томов"], correct: 1, explanation: "4 тома." },
+                { text: "Кто командует русской армией при Бородино?", options: ["Наполеон", "Кутузов", "Багратион", "Барклай"], correct: 1, explanation: "Кутузов." },
+                { text: "За кого выходит Наташа Ростова?", options: ["Андрей", "Пьер", "Анатоль", "Николай"], correct: 1, explanation: "За Пьера Безухова." },
+                { text: "Кто такой Платон Каратаев?", options: ["Враг", "Учитель", "Сослуживец", "Родственник"], correct: 1, explanation: "Символ мудрости." },
+                { text: "Главная мысль романа?", options: ["Героизм", "Роль народа", "Любовь", "Критика"], correct: 1, explanation: "Историей движет народ." }
+            ],
+            bulgakov: [
+                { text: "Дом Турбиных находится на...", options: ["Набережной", "Алексеевском спуске", "Крещатике", "Подоле"], correct: 1, explanation: "Алексеевский спуск, 13." },
+                { text: "Символ дома Турбиных?", options: ["Кремовые шторы", "Библиотека", "Рояль", "Печка"], correct: 0, explanation: "Кремовые шторы." },
+                { text: "Кто спасает Алексея Турбина?", options: ["Елена", "Юлия Рейс", "Николка", "Мышлаевский"], correct: 1, explanation: "Юлия Рейс." },
+                { text: "Кто погибает, спасая юнкеров?", options: ["Алексей", "Николка", "Най-Турс", "Мышлаевский"], correct: 2, explanation: "Най-Турс." },
+                { text: "Финальная фраза романа?", options: ["Всё пройдёт", "Звёзды останутся", "Всё будет правильно", "Мир построен"], correct: 1, explanation: "«Но звёзды останутся»." }
+            ]
         };
+        
+        // Вопросы на время (10 секунд, +20 баллов)
+        const timedQuestions = {
+            lermontov: [
+                { text: "В какой главе романа происходит история с контрабандистами?", options: ["Бэла", "Максим Максимыч", "Тамань", "Княжна Мери"], correct: 2, explanation: "Тамань.", timeLimit: 10, points: 20 },
+                { text: "Кто убивает Вулича в романе?", options: ["Печорин", "Грушницкий", "Пьяный казак", "Контрабандисты"], correct: 2, explanation: "Пьяный казак.", timeLimit: 10, points: 20 },
+                { text: "Как Печорин относится к судьбе?", options: ["Верит", "Не верит", "Сомневается", "Игнорирует"], correct: 0, explanation: "Верит в предопределение.", timeLimit: 10, points: 20 },
+                { text: "Где происходит глава «Княжна Мери»?", options: ["Тамань", "Пятигорск", "Кисловодск", "Тифлис"], correct: 1, explanation: "Пятигорск.", timeLimit: 10, points: 20 },
+                { text: "Что происходит с Печориным в конце?", options: ["Женится", "Умирает в Персии", "Становится генералом", "Эмигрирует"], correct: 1, explanation: "Умирает в Персии.", timeLimit: 10, points: 20 }
+            ],
+            tolstoy: [
+                { text: "Что с Андреем Болконским?", options: ["Женится", "Умирает от ранения", "Эмигрирует", "Декабрист"], correct: 1, explanation: "Умирает от ранения.", timeLimit: 10, points: 20 },
+                { text: "Фамилия Наташи?", options: ["Болконская", "Курагина", "Ростова", "Безухова"], correct: 2, explanation: "Ростова.", timeLimit: 10, points: 20 },
+                { text: "Кто отдал подводы для раненых?", options: ["Андрей", "Пьер", "Наташа", "Кутузов"], correct: 2, explanation: "Наташа.", timeLimit: 10, points: 20 },
+                { text: "Главное сражение романа?", options: ["Аустерлиц", "Шенграбен", "Бородино", "Тарутино"], correct: 2, explanation: "Бородино.", timeLimit: 10, points: 20 },
+                { text: "Что символизирует дуб?", options: ["Смерть", "Возрождение", "Старость", "Войну"], correct: 1, explanation: "Возрождение Андрея.", timeLimit: 10, points: 20 }
+            ],
+            bulgakov: [
+                { text: "Как зовут сестру Турбиных?", options: ["Наташа", "Елена", "Анна", "Варвара"], correct: 1, explanation: "Елена.", timeLimit: 10, points: 20 },
+                { text: "Порядок смены власти в Киеве?", options: ["Б→Г→П", "Г→П→Б", "П→Г→Б", "Б→П→Г"], correct: 1, explanation: "Гетман→Петлюра→Большевики.", timeLimit: 10, points: 20 },
+                { text: "Что снится Алексею после ранения?", options: ["Война", "Рай", "Дом", "Любовь"], correct: 1, explanation: "Рай, где все равны.", timeLimit: 10, points: 20 },
+                { text: "Профессия Алексея Турбина?", options: ["Врач", "Военный", "Писатель", "Адвокат"], correct: 0, explanation: "Врач.", timeLimit: 10, points: 20 },
+                { text: "Что с Николкой в финале?", options: ["Погибает", "Эмигрирует", "Остаётся", "Женится"], correct: 2, explanation: "Остаётся в Киеве.", timeLimit: 10, points: 20 }
+            ]
+        };
+        
+        // Карта поля 5x5 (25 клеток)
+        // 0 - пустая клетка (просто переход)
+        // 1 - обычный вопрос (+10 баллов)
+        // 2 - вопрос на время (+20 баллов, 10 секунд)
+        const boardMap = [
+            [0, 1, 0, 2, 0],
+            [1, 0, 2, 0, 1],
+            [0, 2, 0, 1, 0],
+            [2, 0, 1, 0, 2],
+            [0, 1, 0, 2, 0]
+        ];
+        
+        // Преобразуем в линейный массив для удобства (25 клеток)
+        const linearBoard = [];
+        for (let i = 0; i < 5; i++) {
+            for (let j = 0; j < 5; j++) {
+                linearBoard.push({
+                    row: i,
+                    col: j,
+                    type: boardMap[i][j],
+                    index: linearBoard.length
+                });
+            }
+        }
+        
+        const TOTAL_CELLS = 25;
+        let currentCell = 0;        // индекс текущей клетки (0-24)
+        let score = 0;
+        let lives = 3;
+        let moves = 0;
+        let passedCells = [0];       // пройденные клетки
+        let awaitingAnswer = false;
+        let currentQuestion = null;
+        let pendingTargetCell = null;
+        let isTimedQuestion = false;
+        let timerInterval = null;
+        let timeLeft = 10;
         
         // Получаем выбранного автора
         const author = localStorage.getItem('boardAuthor');
-        if (!author || !authorsData[author]) {
-            alert('Пожалуйста, выберите автора в главном меню');
-            window.location.href = 'index.html';
+        if (!author || !authorsDataTemp) {
+            // Временный костыль для проверки author
+            if (!author || !(author === 'lermontov' || author === 'tolstoy' || author === 'bulgakov')) {
+                alert('Пожалуйста, выберите автора в главном меню');
+                window.location.href = 'index.html';
+            }
         }
         
-        const data = authorsData[author];
+        // Заглушка для authorsDataTemp (чтобы не было ошибки)
+        const authorsDataTemp = {
+            lermontov: { name: "М.Ю. Лермонтов", icon: "🏔️", desc: "«Герой нашего времени» • Кавказ • Дуэль", bgGradient: "linear-gradient(135deg, #3a5e3a 0%, #2c4a2c 100%)" },
+            tolstoy: { name: "Л.Н. Толстой", icon: "⚔️", desc: "«Война и мир» • Бородино • Судьба России", bgGradient: "linear-gradient(135deg, #5d3a1a 0%, #8b5a2b 100%)" },
+            bulgakov: { name: "М.А. Булгаков", icon: "🏙️", desc: "«Белая гвардия» • Киев 1918 • Дом Турбиных", bgGradient: "linear-gradient(135deg, #2c2c3a 0%, #1a1a2a 100%)" }
+        };
+        
+        const data = authorsDataTemp[author];
         document.getElementById('boardBody').style.background = data.bgGradient;
         document.getElementById('boardIcon').textContent = data.icon;
         document.getElementById('boardTitle').textContent = data.name;
         document.getElementById('boardDesc').textContent = data.desc;
         
-        // Параметры игры
-        const TOTAL_CELLS = 8;  // клетки 1-8
-        let currentCell = 0;    // 0 = клетка 1
-        let score = 0;
-        let lives = 3;
-        let moves = 0;           // количество сделанных ходов
-        let awaitingAnswer = false;
-        let currentQuestion = null;
-        let pendingTargetCell = null;
+        const normalQ = normalQuestions[author];
+        const timedQ = timedQuestions[author];
         
-        const pathContainer = document.getElementById('pathContainer');
+        const gridContainer = document.getElementById('gridContainer');
         const questionPanel = document.getElementById('questionPanel');
         const livesSpan = document.getElementById('lives');
         const scoreSpan = document.getElementById('score');
         const movesSpan = document.getElementById('moves');
         
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+        
+        function startTimer(onTimeout) {
+            stopTimer();
+            timeLeft = 10;
+            const timerDiv = document.getElementById('timerDisplay');
+            if (timerDiv) timerDiv.textContent = timeLeft;
+            
+            timerInterval = setInterval(() => {
+                if (!awaitingAnswer) return;
+                timeLeft--;
+                if (timerDiv) {
+                    timerDiv.textContent = timeLeft;
+                    if (timeLeft <= 3) timerDiv.classList.add('timer-warning');
+                    else timerDiv.classList.remove('timer-warning');
+                }
+                if (timeLeft <= 0) {
+                    stopTimer();
+                    onTimeout();
+                }
+            }, 1000);
+        }
+        
         function updateUI() {
             livesSpan.textContent = lives;
             scoreSpan.textContent = score;
             movesSpan.textContent = moves;
-            drawPath();
+            drawGrid();
             
             if (lives <= 0) {
                 questionPanel.innerHTML = `
@@ -381,14 +481,14 @@
             }
             
             if (currentCell === TOTAL_CELLS - 1) {
-                const totalPossible = TOTAL_CELLS * 10;
+                const totalPossible = 25 * 10;
                 const percent = (score / totalPossible) * 100;
                 let prizeQuote = percent >= 80 ? "Блестяще! Вы настоящий знаток литературы!" : (percent >= 50 ? "Неплохо! Но есть куда расти." : "Перечитайте произведения и попробуйте снова!");
                 questionPanel.innerHTML = `
                     <div class="final-screen">
                         <div class="final-icon">🏆</div>
                         <h2>Поздравляем! Путь пройден!</h2>
-                        <div class="final-score">${score} / ${totalPossible} баллов</div>
+                        <div class="final-score">${score} баллов</div>
                         <div class="prize">${prizeQuote}</div>
                         <button id="resetBoardBtn" class="reset-btn">Пройти заново</button>
                     </div>
@@ -398,27 +498,46 @@
             }
         }
         
-        function drawPath() {
-            pathContainer.innerHTML = '';
+        function drawGrid() {
+            gridContainer.innerHTML = '';
             for (let i = 0; i < TOTAL_CELLS; i++) {
-                const cell = document.createElement('div');
-                cell.classList.add('cell');
-                cell.textContent = (i + 1).toString();
+                const cell = linearBoard[i];
+                const cellDiv = document.createElement('div');
+                cellDiv.classList.add('cell');
                 
-                if (i < currentCell) {
-                    cell.classList.add('passed');
-                } else if (i === currentCell) {
-                    cell.classList.add('current');
-                } else if (i === currentCell + 1) {
-                    cell.classList.add('next');
-                    if (!awaitingAnswer && lives > 0) {
-                        cell.addEventListener('click', () => askQuestion(i));
-                    }
+                // Иконка в зависимости от типа клетки
+                let icon = '';
+                let typeText = '';
+                if (cell.type === 1) {
+                    icon = '📝';
+                    typeText = 'вопрос';
+                } else if (cell.type === 2) {
+                    icon = '⏱️';
+                    typeText = 'таймер';
                 } else {
-                    cell.classList.add('locked');
+                    icon = '⬜';
+                    typeText = 'пусто';
                 }
                 
-                pathContainer.appendChild(cell);
+                cellDiv.innerHTML = `
+                    <div class="cell-icon">${icon}</div>
+                    <div class="cell-number">${cell.row+1},${cell.col+1}</div>
+                `;
+                
+                if (passedCells.includes(i)) {
+                    cellDiv.classList.add('passed');
+                } else if (i === currentCell) {
+                    cellDiv.classList.add('current');
+                } else if (i === currentCell + 1) {
+                    cellDiv.classList.add('next');
+                    if (!awaitingAnswer && lives > 0) {
+                        cellDiv.addEventListener('click', () => askQuestion(i));
+                    }
+                } else if (i > currentCell) {
+                    cellDiv.classList.add('locked');
+                }
+                
+                gridContainer.appendChild(cellDiv);
             }
         }
         
@@ -428,20 +547,93 @@
             if (targetCell !== currentCell + 1) return;
             
             pendingTargetCell = targetCell;
-            const randomIndex = Math.floor(Math.random() * data.questions.length);
-            currentQuestion = data.questions[randomIndex];
+            const cellType = linearBoard[targetCell].type;
             
+            let question = null;
+            let isTimed = false;
+            let pointsValue = 10;
+            
+            if (cellType === 0) {
+                // Пустая клетка - просто переход, без вопросов
+                score += 5;
+                moves++;
+                currentCell = targetCell;
+                if (!passedCells.includes(targetCell)) passedCells.push(targetCell);
+                updateUI();
+                questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#2c5530;">✨ Пустая клетка! +5 баллов. Переход на клетку ${targetCell+1}!</p>`;
+                setTimeout(() => {
+                    if (lives > 0 && currentCell !== TOTAL_CELLS - 1) {
+                        questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#5a4a2e;">Нажмите на следующую доступную клетку, чтобы продолжить.</p>`;
+                        drawGrid();
+                    } else {
+                        updateUI();
+                    }
+                }, 1500);
+                return;
+            } else if (cellType === 1) {
+                // Обычный вопрос
+                const randomIndex = Math.floor(Math.random() * normalQ.length);
+                question = normalQ[randomIndex];
+                isTimed = false;
+                pointsValue = 10;
+            } else if (cellType === 2) {
+                // Вопрос на время
+                const randomIndex = Math.floor(Math.random() * timedQ.length);
+                question = timedQ[randomIndex];
+                isTimed = true;
+                pointsValue = 20;
+            }
+            
+            if (!question) return;
+            
+            currentQuestion = question;
+            isTimedQuestion = isTimed;
             awaitingAnswer = true;
+            
             const optionsHtml = currentQuestion.options.map((opt, idx) => 
                 `<div class="board-option" data-opt="${idx}">${opt}</div>`
             ).join('');
             
+            let timerHtml = '';
+            if (isTimed) {
+                timerHtml = `
+                    <div class="timer-question">
+                        <div style="text-align:center;">⏱️ У вас есть 10 секунд!</div>
+                        <div class="timer-display" id="timerDisplay">10</div>
+                    </div>
+                `;
+            }
+            
             questionPanel.innerHTML = `
-                <div class="question-book">📖 Вопрос для перехода на клетку ${targetCell + 1}</div>
+                <div class="question-book">📖 ${isTimed ? 'Вопрос на время! +20 баллов' : 'Обычный вопрос +10 баллов'} (клетка ${targetCell+1})</div>
                 <div class="question-text">${currentQuestion.text}</div>
+                ${timerHtml}
                 <div class="options-grid" id="boardOptions">${optionsHtml}</div>
                 <div id="boardFeedback" class="feedback"></div>
             `;
+            
+            if (isTimed) {
+                startTimer(() => {
+                    if (awaitingAnswer) {
+                        // Время вышло
+                        lives--;
+                        const feedbackDiv = document.getElementById('boardFeedback');
+                        feedbackDiv.innerHTML = `⏰ Время вышло! Правильный ответ: «${currentQuestion.options[currentQuestion.correct]}». -1 жизнь.`;
+                        feedbackDiv.className = 'feedback wrong-feedback';
+                        awaitingAnswer = false;
+                        stopTimer();
+                        updateUI();
+                        setTimeout(() => {
+                            if (lives > 0 && currentCell !== TOTAL_CELLS - 1) {
+                                questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#721c24;">😔 Остались на клетке ${currentCell+1}. Попробуйте снова нажать на следующую клетку.</p>`;
+                                drawGrid();
+                            } else {
+                                updateUI();
+                            }
+                        }, 2000);
+                    }
+                });
+            }
             
             document.querySelectorAll('.board-option').forEach(opt => {
                 opt.addEventListener('click', (e) => {
@@ -451,10 +643,12 @@
                     const feedbackDiv = document.getElementById('boardFeedback');
                     
                     if (isCorrect) {
-                        const points = 10;
+                        stopTimer();
+                        const points = pointsValue;
                         score += points;
                         moves++;
                         currentCell = pendingTargetCell;
+                        if (!passedCells.includes(pendingTargetCell)) passedCells.push(pendingTargetCell);
                         feedbackDiv.innerHTML = `✅ Правильно! +${points} баллов. ${currentQuestion.explanation}`;
                         feedbackDiv.className = 'feedback correct-feedback';
                         opt.classList.add('correct');
@@ -462,13 +656,14 @@
                         updateUI();
                         setTimeout(() => {
                             if (lives > 0 && currentCell !== TOTAL_CELLS - 1) {
-                                questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#2c5530;">✅ Переход на клетку ${currentCell+1} успешен!<br>Нажмите на следующую клетку, чтобы продолжить.</p>`;
-                                drawPath();
+                                questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#2c5530;">✅ Переход на клетку ${currentCell+1} успешен!<br>Нажмите на следующую доступную клетку.</p>`;
+                                drawGrid();
                             } else {
                                 updateUI();
                             }
                         }, 1500);
                     } else {
+                        if (isTimedQuestion) stopTimer();
                         lives--;
                         feedbackDiv.innerHTML = `❌ Неправильно. ${currentQuestion.explanation} -1 жизнь.`;
                         feedbackDiv.className = 'feedback wrong-feedback';
@@ -478,11 +673,11 @@
                         setTimeout(() => {
                             if (lives > 0 && currentCell !== TOTAL_CELLS - 1) {
                                 questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#721c24;">😔 Остались на клетке ${currentCell+1}. Попробуйте снова нажать на следующую клетку.</p>`;
-                                drawPath();
+                                drawGrid();
                             } else {
                                 updateUI();
                             }
-                        }, 1500);
+                        }, 2000);
                     }
                 });
             });
@@ -493,17 +688,19 @@
             score = 0;
             lives = 3;
             moves = 0;
+            passedCells = [0];
             awaitingAnswer = false;
             currentQuestion = null;
             pendingTargetCell = null;
+            stopTimer();
             updateUI();
-            questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#5a4a2e;">🚀 Нажмите на зелёную клетку 2, чтобы начать путь!</p>`;
-            drawPath();
+            questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#5a4a2e;">🚀 Нажмите на следующую доступную клетку, чтобы начать путь!</p>`;
+            drawGrid();
         }
         
         // Инициализация
         updateUI();
-        questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#5a4a2e;">🚀 Нажмите на зелёную клетку 2, чтобы начать путь!</p>`;
+        questionPanel.innerHTML = `<p style="text-align:center; padding:20px; color:#5a4a2e;">🚀 Нажмите на следующую доступную клетку, чтобы начать путь!</p>`;
     </script>
 </body>
 </html>

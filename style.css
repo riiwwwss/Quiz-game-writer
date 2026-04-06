@@ -10,24 +10,7 @@ body {
     min-height: 100vh;
     padding: 20px;
     position: relative;
-    overflow-x: hidden;
-}
-
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at 20% 50%, rgba(247,212,74,0.1) 0%, transparent 50%);
-    pointer-events: none;
-    animation: floatBg 20s ease-in-out infinite;
-}
-
-@keyframes floatBg {
-    0%, 100% { transform: translate(0, 0); opacity: 0.5; }
-    50% { transform: translate(5%, 5%); opacity: 0.8; }
+    overflow-x: auto;
 }
 
 .container {
@@ -37,52 +20,18 @@ body::before {
     z-index: 1;
 }
 
-.title-animation {
-    position: relative;
-    text-align: center;
-}
-
 .main-title {
     font-size: 56px;
     color: #f7d44a;
-    text-shadow: 0 0 20px rgba(247,212,74,0.5), 3px 3px 0 #8b5a2b;
+    text-shadow: 3px 3px 0 #8b5a2b;
     margin-bottom: 10px;
-    animation: titleGlow 2s ease-in-out infinite;
-}
-
-@keyframes titleGlow {
-    0%, 100% { text-shadow: 0 0 20px rgba(247,212,74,0.5), 3px 3px 0 #8b5a2b; }
-    50% { text-shadow: 0 0 40px rgba(247,212,74,0.8), 3px 3px 0 #8b5a2b; }
-}
-
-.glow-effect {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 200px;
-    height: 200px;
-    background: radial-gradient(circle, rgba(247,212,74,0.3) 0%, transparent 70%);
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    animation: pulse 3s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
-    50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.2; }
+    text-align: center;
 }
 
 .subtitle {
     text-align: center;
     font-size: 18px;
     color: #e8e0c5;
-    margin-bottom: 5px;
-}
-
-.subtitle-small {
-    text-align: center;
-    font-size: 14px;
-    color: #c0b88a;
     margin-bottom: 40px;
 }
 
@@ -96,55 +45,29 @@ body::before {
 .world-card {
     background: rgba(255, 248, 225, 0.95);
     border-radius: 24px;
-    padding: 30px 20px;
+    padding: 30px 20px 25px;
     text-align: center;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     cursor: pointer;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    position: relative;
-    overflow: hidden;
-}
-
-.world-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(247,212,74,0.2) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.4s;
-}
-
-.world-card:hover::before {
-    opacity: 1;
 }
 
 .world-card:hover {
-    transform: translateY(-15px) scale(1.02);
+    transform: translateY(-10px);
     box-shadow: 0 25px 50px rgba(0,0,0,0.4);
 }
 
 .world-icon {
-    width: 120px;
-    height: 120px;
+    width: 140px;
+    height: 140px;
     margin: 0 auto 15px;
     border-radius: 50%;
-    overflow: hidden;
-    border: 3px solid #f7d44a;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    transition: transform 0.3s;
-}
-
-.world-card:hover .world-icon {
-    transform: scale(1.05);
-}
-
-.world-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    background: linear-gradient(135deg, #f7d44a, #ffaa33);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 80px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
 }
 
 .world-card h2 {
@@ -175,22 +98,27 @@ body::before {
     font-weight: bold;
 }
 
+.button-group {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
 .play-btn {
     background: linear-gradient(135deg, #2c5530 0%, #1e3c2c 100%);
     color: white;
     border: none;
-    padding: 12px 28px;
-    font-size: 16px;
+    padding: 10px 20px;
+    font-size: 14px;
     border-radius: 40px;
     cursor: pointer;
     transition: all 0.3s;
     font-weight: bold;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 .play-btn:hover {
     transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
 }
 
 .info-footer {
@@ -213,12 +141,6 @@ body::before {
     border-radius: 32px;
     padding: 25px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    animation: slideIn 0.5s ease-out;
-}
-
-@keyframes slideIn {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 .game-header {
@@ -272,48 +194,39 @@ body::before {
     font-weight: bold;
 }
 
-.progress-section {
+.chapter-map {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
     margin-bottom: 25px;
+    padding: 10px;
+    background: rgba(224, 213, 181, 0.3);
+    border-radius: 60px;
 }
 
-.progress-bar-container {
+.chapter-marker {
+    width: 40px;
+    height: 40px;
     background: #e0d5b5;
-    height: 12px;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    background: linear-gradient(90deg, #f7d44a, #ffaa33);
-    height: 100%;
-    width: 0%;
-    transition: width 0.4s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.progress-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-    animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-
-.progress-text {
-    text-align: center;
-    margin-top: 8px;
-    font-size: 14px;
-    color: #5a4a2e;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-weight: bold;
+    color: #5a4a2e;
+    transition: all 0.2s;
+}
+
+.chapter-marker.completed {
+    background: #2c5530;
+    color: white;
+}
+
+.chapter-marker.active {
+    background: #f7d44a;
+    color: #2c5530;
+    transform: scale(1.2);
 }
 
 .timer-section {
@@ -328,16 +241,7 @@ body::before {
     position: relative;
 }
 
-.timer-svg {
-    transform: rotate(-90deg);
-}
-
-.timer-bg {
-    stroke: #e0d5b5;
-}
-
 .timer-progress {
-    stroke: #f7d44a;
     transition: stroke-dashoffset 0.1s linear;
 }
 
@@ -357,7 +261,7 @@ body::before {
 
 @keyframes timerPulse {
     0%, 100% { color: #2c5530; }
-    50% { color: #e76f51; text-shadow: 0 0 5px red; }
+    50% { color: #e76f51; }
 }
 
 .location {
@@ -370,12 +274,6 @@ body::before {
 
 .location-icon {
     font-size: 56px;
-    animation: bounce 2s ease-in-out infinite;
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
 }
 
 .location h3 {
@@ -396,12 +294,6 @@ body::before {
     padding: 30px;
     margin-bottom: 25px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    animation: cardAppear 0.4s ease-out;
-}
-
-@keyframes cardAppear {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
 }
 
 .question-book {
@@ -442,41 +334,21 @@ body::before {
     font-size: 16px;
 }
 
-.option:hover:not(.disabled) {
+.option:hover {
     transform: translateX(8px);
     background: #e8dfc8;
-    border-color: #f7d44a;
 }
 
 .option.correct {
     background: linear-gradient(135deg, #90be6d, #6a994e);
     border-color: #2c5530;
     color: white;
-    animation: correctPulse 0.5s ease;
-}
-
-@keyframes correctPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.02); }
-    100% { transform: scale(1); }
 }
 
 .option.wrong {
     background: linear-gradient(135deg, #e76f51, #bc4742);
     border-color: #bc4742;
     color: white;
-    animation: shake 0.3s ease;
-}
-
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
-}
-
-.option.disabled {
-    pointer-events: none;
-    opacity: 0.7;
 }
 
 .feedback {
@@ -485,12 +357,6 @@ body::before {
     border-radius: 12px;
     text-align: center;
     font-size: 14px;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 .feedback.correct-feedback {
@@ -508,23 +374,11 @@ body::before {
 .final-screen {
     text-align: center;
     padding: 40px;
-    animation: zoomIn 0.5s ease-out;
-}
-
-@keyframes zoomIn {
-    from { opacity: 0; transform: scale(0.8); }
-    to { opacity: 1; transform: scale(1); }
 }
 
 .final-icon {
     font-size: 80px;
     margin-bottom: 20px;
-    animation: spin 1s ease;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
 }
 
 .final-screen h2 {
@@ -563,6 +417,8 @@ body::before {
     display: inline-block;
     margin-top: 20px;
     transition: all 0.3s;
+    border: none;
+    cursor: pointer;
 }
 
 .reset-btn:hover {
@@ -570,214 +426,23 @@ body::before {
     transform: scale(1.05);
 }
 
-@media (max-width: 768px) {
-    .main-title {
-        font-size: 36px;
-    }
-    .game-container {
-        padding: 15px;
-    }
-    .question-text {
-        font-size: 16px;
-    }
-    .option {
-        padding: 12px 16px;
-        font-size: 14px;
-    }
-    .worlds-grid {
-        grid-template-columns: 1fr;
-    }
-    .stats-panel {
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-}
-/* Добавить в конец style.css */
-
-.world-icon {
-    width: 120px;
-    height: 120px;
-    margin: 0 auto 15px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #f7d44a, #ffaa33);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 64px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    transition: transform 0.3s;
-}/* ===== Увеличенные иконки на главной ===== */
-.world-icon {
-    width: 140px;
-    height: 140px;
-    margin: 0 auto 15px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #f7d44a, #ffaa33);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 80px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-.world-card:hover .world-icon {
-    transform: scale(1.05) rotate(3deg);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.4);
-}
-
-/* ===== Карта глав (вместо прогресс-бара) ===== */
-.chapter-map {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 25px;
-    padding: 10px;
-    background: rgba(224, 213, 181, 0.3);
-    border-radius: 60px;
-}
-.chapter-marker {
-    width: 40px;
-    height: 40px;
-    background: #e0d5b5;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    color: #5a4a2e;
-    transition: all 0.2s;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-.chapter-marker.completed {
-    background: #2c5530;
-    color: white;
-    box-shadow: 0 0 8px #f7d44a;
-}
-.chapter-marker.active {
-    background: #f7d44a;
-    color: #2c5530;
-    transform: scale(1.2);
-    box-shadow: 0 0 12px gold;
-    animation: pulse 1s infinite;
-}
-@keyframes pulse {
-    0% { transform: scale(1.2); }
-    50% { transform: scale(1.3); background: #ffcc33; }
-    100% { transform: scale(1.2); }
-}
-
-/* ===== Эффект встряски ===== */
 @keyframes shake {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-6px); }
-    75% { transform: translateX(6px); }
-    100% { transform: translateX(0); }
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
 }
 
-/* ===== Дополнительная анимация для появления вопросов ===== */
-.question-card {
-    animation: cardAppear 0.4s ease-out, glowPulse 1.5s infinite alternate;
-}
-@keyframes glowPulse {
-    from { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-    to { box-shadow: 0 10px 40px rgba(247,212,74,0.3); }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== Адаптив для карты ===== */
-@media (max-width: 600px) {
-    .chapter-marker {
-        width: 30px;
-        height: 30px;
-        font-size: 12px;
-    }
-    .world-icon {
-        width: 100px;
-        height: 100px;
-        font-size: 60px;
-    }
-}
-/* Дополнительные стили для бродилки */
-.mini-option {
-    background: #f5f0e3;
-    padding: 10px 15px;
-    margin: 8px 0;
-    border-radius: 40px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.mini-option:hover {
-    background: #f7d44a;
-    transform: translateX(5px);
-}
-.choice-btn {
-    display: block;
-    width: 100%;
-    background: linear-gradient(135deg, #f7d44a, #ffaa33);
-    border: none;
-    padding: 14px;
-    margin: 10px 0;
-    border-radius: 50px;
-    font-size: 16px;
-    font-weight: bold;
-    color: #2c5530;
-    cursor: pointer;
-    text-align: left;
-    padding-left: 20px;
-    transition: all 0.2s;
-}
-.choice-btn:hover {
-    transform: translateX(8px);
-    background: #ffcc44;
-}
-.adventure-map {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-}
-.map-node {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #e0d5b5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    transition: 0.2s;
-}
-.map-node.visited {
-    background: #2c5530;
-    color: white;
-}
-.map-node.current {
-    background: #f7d44a;
-    transform: scale(1.2);
-    box-shadow: 0 0 8px gold;
-}
-.reset-adventure {
-    background: #8b5a2b;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 30px;
-    cursor: pointer;
-    margin-top: 20px;
-    width: 100%;
-}
-.button-group {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    margin-top: 15px;
-}
-.button-group .play-btn {
-    margin: 0;
-    padding: 8px 16px;
-    font-size: 14px;
-}
-.world-card {
-    padding-bottom: 25px;
+@media (max-width: 768px) {
+    .main-title { font-size: 36px; }
+    .game-container { padding: 15px; }
+    .question-text { font-size: 16px; }
+    .option { padding: 12px 16px; font-size: 14px; }
+    .worlds-grid { grid-template-columns: 1fr; }
+    .chapter-marker { width: 30px; height: 30px; font-size: 12px; }
+    .world-icon { width: 100px; height: 100px; font-size: 60px; }
 }
